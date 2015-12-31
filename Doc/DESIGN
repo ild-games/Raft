@@ -1,0 +1,23 @@
+
+# Build Dependencies
+# Build Project
+# Package Project
+# Run Project
+
+# Construction Strategy
+
+##TODO
+
+# Build CLI and Print Hello Word <current directory> DONE!
+# Print Hello World <directory with Raft> DONE!
+# Download JSONCPP DONE!
+# Create exec wrapper - should create cwd if it does not exist already DONE!
+# Build JSONCPP DONE!
+# Install JSONCPP DONE!
+# Test SFML build DONE!
+
+# Copy Template Directory into current directory
+# Rename Files in Template Transfer
+# Apply template library
+
+##DONE

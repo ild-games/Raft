@@ -14,6 +14,7 @@ function compileTS(override) {
         declaration: true,
         module : 'commonjs',
         noImplicitAny: true,
+        suppressImplicitAnyIndexErrors : true,
         target : 'ES5'
     };
 

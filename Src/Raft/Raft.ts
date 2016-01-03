@@ -8,6 +8,67 @@ import mkdirp = require('mkdirp')
 
 module Raft {
 
+    export module Action {
+        export function defaultAction() {
+            return build();
+        }
+
+        export function build(options : {platform? : string, architecture? : string} = {}) {
+            var buildSettings : Build = {
+                isDeploy : false,
+                platform : Platform.getPlatform(options.platform),
+                architecture : Platform.getArchitecture(options.architecture)
+            };
+
+            return Raft.Project.find(Raft.Path.cwd())
+                .then(function(project) {
+                    var dependencies = project.dependencies();
+                    raftlog("Project", `Getting ${dependencies.length} for the project`);
+                    var getDep = (dependency : Dependency) => getDependency(project, buildSettings, dependency);
+                    return Promise
+                    .all(_.map(dependencies, getDep))
+                    .then(function (){
+                        return project.build(buildSettings);
+                    });
+                });
+        }
+    }
+
+    export module Platform {
+        export enum Platform {
+            Windows,
+            Linux,
+            OSX,
+            Android
+        }
+
+        export enum Architecture {
+            x64,
+            x86,
+            arm7
+        }
+
+        export function getPlatform(platform? : string) : string {
+            return "host";
+        }
+
+        export function getArchitecture(architecture? : string) : string {
+            return "host";
+        }
+
+        export function currentPlatorm() {
+            //TODO Implement correctly
+            return Platform.Linux;
+        }
+
+        export function currentArchitecture() {
+            //TODO Implement correctly
+            return Architecture.x64;
+        }
+    }
+
+
+
     export function raftlog(tag: string, message : string) {
         console.log(`${tag}:: ${message}`);
     }
@@ -131,9 +192,14 @@ module Raft {
         location : string
     }
 
+    export interface ProjectDescriptor {
+        dependencies : DependencyDescriptor[];
+    }
+
     export function createDependency(dependencyDescriptor : DependencyDescriptor) {
         var repo = createRepository(dependencyDescriptor.repository);
         if (dependencyDescriptor.buildSystem === "cmake") {
+            console.log("Creating a dependency");
             return new CMakeDependency(dependencyDescriptor.name, repo);
         } else {
             throw Error("unknown build system type");
@@ -151,10 +217,10 @@ module Raft {
     export interface Build {
         platform : string;
         architecture : string;
+        isDeploy : boolean;
     }
 
-
-    export function getDependency(project : Project, dependency : Dependency, build : Build) {
+    export function getDependency(project : Project, build : Build, dependency : Dependency) {
         raftlog(dependency.name, "Downloading");
         return dependency.download(project, build)
         .then(() => {
@@ -221,21 +287,32 @@ module Raft {
             });
         }
 
+        read() : Promise<string> {
+            return Promise
+            .fromCallback((callback) => {
+                fs.readFile(this.path.toString(), callback)
+            }).then((buffer : Buffer) => {
+                return buffer.toString();
+            });
+        }
+
         static cwd() : Path {
             return new Path(process.cwd());
         }
     }
 
-    export function findProject(path : Path) : Project {
-        return new Project(new Path(process.cwd()));
-    }
-
     export class Project {
         private static RAFT_DIR = new Path('Raft');
+        private static RAFT_FILE = Project.RAFT_DIR.append('raftfile.json');
+        private static BUILD_DIR = new Path('build');
         private static DEPENDENCY_DIR = Project.RAFT_DIR.append('libs');
         private static DEPENDENCY_SRC_DIR = Project.DEPENDENCY_DIR.append('src');
         private static DEPENDENCY_BUILD_DIR = Project.DEPENDENCY_DIR.append('build');
         private static DEPENDENCY_INSTALL_DIR = Project.DEPENDENCY_DIR.append('install');
+        private static DEPENDENCY_LIB_DIR = new Path('lib');
+        private static DEPENDENCY_INC_DIR = new Path('include');
+
+        private raftfile : ProjectDescriptor;
 
         constructor(root : Path) {
             this.root = root;
@@ -246,7 +323,7 @@ module Raft {
          *  @param path The path to start the search from
          *  @return Returns the project if it exists or null if it does not.
          */
-        static find(path : Path) : Project {
+        static find(path : Path) : Promise<Project> {
             var paths = [path];
             var raftDir = new Path("Raft");
 
@@ -257,10 +334,24 @@ module Raft {
             var rootDir = _.first(_.filter(paths, (path) => path.append(raftDir).exists()));
 
             if (rootDir) {
-                return new Project(rootDir);
+                return (new Project(rootDir)).load();
             } else {
-                return null;
+                return Promise.reject(null);
             }
+        }
+
+        load() : Promise<Project> {
+            return this.root.append(Project.RAFT_FILE).read()
+            .then((data) => {
+                raftlog("Project Data", data);
+                this.raftfile = JSON.parse(data);
+                raftlog("Project Data", JSON.stringify(this.raftfile));
+                return this;
+            });
+        }
+
+        dependencies() : Dependency [] {
+            return _.map(this.raftfile.dependencies, createDependency);
         }
 
         dirForDependency(dependency : Dependency) : Path {
@@ -282,6 +373,41 @@ module Raft {
                 build.architecture);
         }
 
+        dirForDependencyLib(build : Build) {
+            return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_LIB_DIR);
+        }
+
+        dirForDependencyInc(build : Build) {
+            return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_INC_DIR);
+        }
+
+        dirForBuild(build : Build) {
+            if (build.isDeploy) {
+                throw Error("deploy has not been implemented");
+            } else {
+                return this.root.append(Project.BUILD_DIR);
+            }
+        }
+
+        build(build : Build) : Promise<any> {
+            var buildPath = this.dirForBuild(build);
+
+            var cmakeOptions = {
+                RAFT : CMake.raftCmakeFile().toString(),
+                RAFT_INCLUDE_DIR : this.dirForDependencyInc(build).toString(),
+                RAFT_LIB_DIR : this.dirForDependencyLib(build).toString(),
+                RAFT_IS_DESKTOP : true,
+                RAFT_IS_ANDROID : false,
+            }
+
+            console.log(`Raft file location ${cmakeOptions.RAFT}`)
+
+            return CMake.configure(this.root, buildPath, cmakeOptions)
+            .then(() => {
+                return CMake.build(buildPath);
+            });
+        }
+
         //What do I need for the project?
         // Where it is located
         // Its configuration
@@ -294,7 +420,11 @@ module Raft {
 
 module Raft.Git {
     export function getRepo(uri : string, destination : Path) {
-        return System.execute(`git clone ${uri} ${destination.toString()}`);
+        if (destination.exists()) {
+            return System.execute(`git pull`, { cwd : destination});
+        } else {
+            return System.execute(`git clone ${uri} ${destination.toString()}`);
+        }
     }
 }
 
@@ -320,6 +450,14 @@ module Raft.CMake {
 
     export function install(buildPath : Path) {
         return System.execute(`make install`, {cwd : buildPath});
+    }
+
+    export function raftCMakeDir() {
+        return (new Path(__dirname)).parent().parent().parent().append('CMake');
+    }
+
+    export function raftCmakeFile() {
+        return raftCMakeDir().append("Raft.cmake");
     }
 }
 

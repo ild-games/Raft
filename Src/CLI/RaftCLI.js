@@ -23,17 +23,8 @@ var SFML = {
 
 var DEFAULT_BUILD = {
     platform : "desktop",
-    architecture : "x86"
+    architecture : "x86",
+    isDeploy : false
 }
 
-if (project) {
-    console.log("Project found at " + project.root.toString());
-
-    var jsoncpp = Raft.createDependency(JSONCPP);
-    var sfml = Raft.createDependency(SFML);
-
-    Raft.getDependency(project, jsoncpp, DEFAULT_BUILD).done();
-    Raft.getDependency(project, sfml, DEFAULT_BUILD).done();
-} else {
-    console.log("No project found");
-}
+Raft.Action.defaultAction().done();

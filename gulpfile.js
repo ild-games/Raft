@@ -8,6 +8,7 @@ var watch = require('gulp-watch');
 
 var LIB_FILES = "Src/Raft/**/*.ts"
 var CLI_FILES = "Src/CLI/RaftCLI.js"
+var TYPINGS = "TSD/typings.d.ts"
 
 function compileTS(override) {
     var project = {
@@ -27,7 +28,7 @@ function compileTS(override) {
 
 gulp.task('lib', function() {
     return gulp
-        .src([LIB_FILES, 'TSD/typings/tsd.d.ts'])
+        .src([LIB_FILES, TYPINGS])
         .pipe(compileTS())
         .js
         .pipe(gulp.dest('release/lib/Raft/'));

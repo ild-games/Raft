@@ -1,30 +1,14 @@
 #!/usr/bin/env node
 var Raft = require("Raft");
 
-var project = Raft.Project.find(Raft.Path.cwd());
+var argv = require('yargs')
+    .usage('raft [--create]')
+    .boolean(['create'])
+    .argv
+;
 
-var JSONCPP = {
-    name : "JsonCPP",
-    repository : {
-        type : "git",
-        location : "https://github.com/open-source-parsers/jsoncpp"
-    },
-    buildSystem : "cmake"
+if (argv.create) {
+    Raft.Action.create().done();
+} else {
+    Raft.Action.defaultAction().done();
 }
-
-var SFML = {
-    name : "SFML",
-    repository : {
-        type : "git",
-        location : "https://github.com/SFML/SFML"
-    },
-    buildSystem : "cmake"
-}
-
-var DEFAULT_BUILD = {
-    platform : "desktop",
-    architecture : "x86",
-    isDeploy : false
-}
-
-Raft.Action.defaultAction().done();

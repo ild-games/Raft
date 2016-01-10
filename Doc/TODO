@@ -16,9 +16,8 @@ Package
 - Package project into a distributable for the platform
 
 Template
-- Copy Template Directory into current directory
-- Rename Files in Template Transfer
-- Apply template library
++ Allow using template directories
+- Allow creating a game from a template to be machine agnostic
 
 Usability
 - Write process stdout and stderr to files on failure

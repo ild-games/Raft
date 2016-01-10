@@ -1,1 +1,3 @@
-module.exports = require('./Raft.js')
+export = {
+    Action : require('./CLIActions')
+}

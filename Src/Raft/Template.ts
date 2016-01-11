@@ -1,6 +1,7 @@
 import gulp = require('gulp');
 import mustache = require('gulp-mustache')
 import rename = require('gulp-rename')
+import Promise = require('bluebird')
 
 import Path = require('./Path')
 

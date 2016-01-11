@@ -1,13 +1,18 @@
 import System = require('./System')
 import Path = require('./Path')
+import Promise = require('bluebird')
 
 module Repository {
-    export function getGitRepo(uri : string, destination : Path) {
+    function getGitRepo(uri : string, destination : Path) {
         if (destination.exists()) {
             return System.execute(`git pull`, { cwd : destination});
         } else {
             return System.execute(`git clone ${uri} ${destination.toString()}`);
         }
+    }
+
+    function checkoutBranch(repo : Path, branchName : string) {
+        return System.execute(`git checkout ${branchName}`, { cwd : repo});
     }
 
     export interface Repository {
@@ -16,13 +21,21 @@ module Repository {
 
     export class GitRepository implements Repository {
         uri : string;
+        branch : string;
 
-        constructor(uri : string) {
+        constructor(uri : string, branch? : string) {
             this.uri = uri;
+            this.branch = branch;
         }
 
         download(destination : Path) {
-            return getGitRepo(this.uri, destination);
+            console.log(`Getting repo: ${this.uri} branch: ${this.branch}`)
+            return getGitRepo(this.uri, destination)
+            .then(() => {
+                if (this.branch) {
+                    return checkoutBranch(destination, this.branch);
+                }
+            });
         }
     }
 }

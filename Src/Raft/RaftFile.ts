@@ -8,7 +8,8 @@ module RaftFile {
 
     export interface RepositoryDescriptor {
         type : string,
-        location : string
+        location : string,
+        branch? : string
     }
 
     export interface Root {

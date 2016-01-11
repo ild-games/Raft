@@ -17,8 +17,17 @@ In the future this will likely be wrapped up in an npm package.  Until then you 
 2. Change into the directory.
 3. Run `npm install`
 4. Change into the TSD file and run `tsd install`
+5. Add the following to your bashrc:
 5. Add release/lib to your NODE_PATH environment variable.
 6. Add release/bin to your PATH environment variable.
+
+Instead of setting the environment paths manually you can copy this into your bashrc and set RAFT_PATH.
+
+```
+export RAFT_PATH=<Path to the root directory of the raft repo>
+export PATH=$PATH:$RAFT_PATH/release/bin
+export NODE_PATH=$NODE_PATH:$RAFT_PATH/release/lib
+```
 
 # Available Commands
 

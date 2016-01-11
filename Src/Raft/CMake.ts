@@ -1,5 +1,7 @@
-import Path = require('./Path')
-import System = require('./System')
+import _ = require('underscore');
+
+import Path = require('./Path');
+import System = require('./System');
 
 module CMake {
     export function configure(

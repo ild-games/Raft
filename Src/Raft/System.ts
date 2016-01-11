@@ -1,4 +1,5 @@
 import child_process = require('child_process');
+import Promise = require('bluebird');
 
 import Path = require('./Path');
 import raftlog = require('./Log');

@@ -1,10 +1,12 @@
+import Promise = require('bluebird');
+import _ = require('underscore');
+
 import BuildConfig = require('./BuildConfig');
 import CMake = require('./CMake');
-import Dependency = require('./Dependency');
 import Path = require('./Path');
 import RaftFile = require('./RaftFile');
 
-import raftlog = require('./log');
+import raftlog = require('./Log');
 
 class Project {
     private static RAFT_DIR = new Path('Raft');
@@ -55,20 +57,20 @@ class Project {
         });
     }
 
-    dependencies() : Dependency.Dependency [] {
-        return _.map(this.raftfile.dependencies, Dependency.createDependency);
+    dependencies() : RaftFile.DependencyDescriptor [] {
+        return this.raftfile.dependencies.slice(0);
     }
 
-    dirForDependency(dependency : Dependency.Dependency) : Path {
-        return this.root.append(Project.DEPENDENCY_SRC_DIR, dependency.name);
+    dirForDependency(name : string) : Path {
+        return this.root.append(Project.DEPENDENCY_SRC_DIR, name);
     }
 
-    dirForDependencyBuild(dependency : Dependency.Dependency, build : BuildConfig.Build) {
+    dirForDependencyBuild(name : string, build : BuildConfig.Build) {
         return this.root.append(
             Project.DEPENDENCY_BUILD_DIR,
             build.platform,
             build.architecture,
-            dependency.name);
+            name);
         }
 
     dirForDependencyInstall(build :BuildConfig.Build) {
@@ -94,23 +96,24 @@ class Project {
         }
     }
 
-    build(build :BuildConfig.Build) : Promise<any> {
+    build(build : BuildConfig.Build) : Promise<any> {
         var buildPath = this.dirForBuild(build);
-
-        var cmakeOptions = {
-            RAFT : CMake.raftCmakeFile().toString(),
-            RAFT_INCLUDE_DIR : this.dirForDependencyInc(build).toString(),
-            RAFT_LIB_DIR : this.dirForDependencyLib(build).toString(),
-            RAFT_IS_DESKTOP : true,
-            RAFT_IS_ANDROID : false,
-        }
-
-        console.log(`Raft file location ${cmakeOptions.RAFT}`)
-
+        var cmakeOptions = this.cmakeOptions(this, build)
         return CMake.configure(this.root, buildPath, cmakeOptions)
         .then(() => {
             return CMake.build(buildPath);
         });
+    }
+
+    cmakeOptions(rootProject : Project, build : BuildConfig.Build) {
+        return {
+            RAFT : CMake.raftCmakeFile().toString(),
+            RAFT_INCLUDE_DIR : rootProject.dirForDependencyInc(build).toString(),
+            RAFT_LIB_DIR : rootProject.dirForDependencyLib(build).toString(),
+            RAFT_IS_DESKTOP : true,
+            RAFT_IS_ANDROID : false,
+            CMAKE_INSTALL_PREFIX : this.root.append('install')
+        }
     }
 
     //What do I need for the project?
@@ -119,5 +122,4 @@ class Project {
     // Its current state
     root : Path;
 }
-
 export = Project;

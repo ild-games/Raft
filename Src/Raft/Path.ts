@@ -2,6 +2,7 @@ import fs = require('fs');
 import npath = require('path');
 import mkdirp = require('mkdirp');
 import _ = require('underscore');
+import Promise = require('bluebird')
 
 class Path {
     private path : string;
@@ -35,6 +36,10 @@ class Path {
         } catch (error) {
             return false;
         }
+    }
+
+    equals(path : Path) {
+        return path != null && path.path === this.path;
     }
 
     createDirectory() : Promise<boolean> {

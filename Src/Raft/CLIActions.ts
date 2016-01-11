@@ -1,9 +1,12 @@
-import BuildConfig = require('./BuildConfig')
-import Dependency = require('./Dependency')
-import Path = require('./Path')
-import Project = require('./Project')
-import Template = require('./Template')
-import raftlog = require('./Log')
+import _ = require('underscore');
+
+import BuildConfig = require('./BuildConfig');
+import Dependency = require('./Dependency');
+import Path = require('./Path');
+import Project = require('./Project');
+import Promise = require('bluebird');
+import Template = require('./Template');
+import raftlog = require('./Log');
 
 export function defaultAction() {
     return build();
@@ -20,10 +23,11 @@ export function build(options : {platform? : string, architecture? : string} = {
     .then(function(project) {
         var dependencies = project.dependencies();
         raftlog("Project", `Getting ${dependencies.length} for the project`);
-        var getDep = (dependency : Dependency.Dependency) => Dependency.getDependency(project, buildSettings, dependency);
         return Promise
-        .all(_.map(dependencies, getDep))
-        .then(function (){
+        .all(_.map(
+            _.map(dependencies, Dependency.createDependency),
+            (dependency) => Dependency.getDependency(project, buildSettings, dependency)
+        )).then(function (){
             return project.build(buildSettings);
         });
     });

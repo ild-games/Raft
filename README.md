@@ -31,7 +31,8 @@ export NODE_PATH=$NODE_PATH:$RAFT_PATH/release/lib
 
 # Available Commands
 
-* run `raft create` to create a new project. (NOT IMPLEMENTED)
-* run `raft [platform] [arch]` to build the project and it's dependencies. (NOT IMPLEMENTED)
+* run `raft create` to create a new project.
+* run `raft build` to build the project and it's dependencies.
+* run `raft build [platform] [arch]` to build the project for a specific platform. (NOT IMPLEMENTED)
 * run `raft run [platform] [arch]` to run the project. (NOT IMPLEMENTED)
 * run `raft release-build` to build a release version of the project for all supported platforms. (NOT IMPLEMENTED)

@@ -28,6 +28,9 @@
     },
     "q/Q.d.ts": {
       "commit": "6eebd5e90a1cbd6b47b0705ba72dbcd5baf846f3"
+    },
+    "rimraf/rimraf.d.ts": {
+      "commit": "70bf7e2bfeb0d5b1b651ef3219bcc65c8eec117e"
     }
   }
 }

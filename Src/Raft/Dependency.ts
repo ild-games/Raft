@@ -9,115 +9,97 @@ import VCS = require('./VCS')
 
 import raftlog = require('./Log')
 
-module Dependency {
-    export interface Dependency {
-        name : string;
-        download(project : Project, build : BuildConfig.Build) : Promise<any>;
-        buildInstall(project : Project, build : BuildConfig.Build) : Promise<any>;
+/**
+ * Interface used to interact with a build dependency.
+ */
+export interface Dependency {
+    /**
+     * The name of the dependency.  Must be unique in a build.
+     * @type {string}
+     */
+    name : string;
+    /**
+     * Download the source and binaries used by the dependency.
+     * @param  {Project}           project Root raft project that is being built.
+     * @param  {BuildConfig.Build} build   Configuration for the current build.
+     * @return {Promise<any>}              A promise that resolves once the download is finished.
+     */
+    download(project : Project, build : BuildConfig.Build) : Promise<any>;
+    /**
+     * Build the dependency and install it so that it is accessible to other dependencies
+     * and the root project.
+     * @param  {Project}           project Root raft project that is being built.
+     * @param  {BuildConfig.Build} build   Configuration for the current build.
+     * @return {Promise<any>}              A promise that resolves once the project is built and installed.
+     */
+    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any>;
+}
+
+/**
+ * A dependency that downloads its source from a repository.
+ */
+export class RepositoryDependency implements Dependency {
+    name : string;
+    repository : VCS.Repository;
+
+    /**
+     * @param  {string}         name The name of the dependency.
+     * @param  {VCS.Repository} repo The repository the source can be downloaded from.
+     */
+    constructor(name : string, repo : VCS.Repository) {
+        this.name = name;
+        this.repository = repo;
     }
 
-
-    export class RepositoryDependency implements Dependency {
-        name : string;
-        repository : VCS.Repository;
-
-        constructor(name : string, repo : VCS.Repository) {
-            this.name = name;
-            this.repository = repo;
-        }
-
-        download(project : Project, build : BuildConfig.Build) : Promise<any> {
-            return this.repository.download(project.dirForDependency(this.name));
-        }
-
-        buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> { return null };
+    /**
+     * @see Dependency.Dependency.download
+     */
+    download(project : Project, build : BuildConfig.Build) : Promise<any> {
+        return this.repository.download(project.dirForDependency(this.name));
     }
 
-    export class CMakeDependency extends RepositoryDependency {
-        buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> {
-            var sourceLocation = project.dirForDependency(this.name);
-            var buildLocation = project.dirForDependencyBuild(this.name, build);
-            var installLocation = project.dirForDependencyInstall(build);
-            var cmakeOptions = { CMAKE_INSTALL_PREFIX : installLocation.toString()};
+    /**
+     * @see Dependency.Dependency.buildInstall
+     */
+    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> { return null };
+}
 
-            return CMake.configure(sourceLocation, buildLocation, cmakeOptions)
-            .then(() => {
-                return CMake.build(buildLocation);
-            }).then(() => {
-                return CMake.install(buildLocation);
-            });
-        }
-    }
+/**
+ * A dependency that can be used to build a standard CMake project.
+ */
+export class CMakeDependency extends RepositoryDependency {
+    /**
+     * @see Dependency.Dependency.buildInstall
+     */
+    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> {
+        var sourceLocation = project.dirForDependency(this.name);
+        var buildLocation = project.dirForDependencyBuild(this.name, build);
+        var installLocation = project.dirForDependencyInstall(build);
+        var cmakeOptions = { CMAKE_INSTALL_PREFIX : installLocation.toString()};
 
-    export class RaftDependency extends RepositoryDependency {
-        private project : Project;
-
-        download(project : Project, build : BuildConfig.Build) : Promise<any> {
-            var buildLocation = project.dirForDependency(this.name);
-            return super.download(project, build)
-            .then(() => {
-                return Project.find(buildLocation);
-            }).then((thisProject) => {
-                this.project = thisProject;
-
-                if (this.project.root.equals(project.root)) {
-                    throw Error(`The Dependency ${this.name} is not a raft dependency`);
-                }
-
-                return Promise.all(_.map(
-                    _.map(this.project.dependencies(), createDependency),
-                    (dependency) => dependency.download(project, build)
-                ));
-            });
-        }
-
-        buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> {
-            var buildPath = project.dirForDependencyBuild(this.name, build);
-            return Promise.all(_.map(
-                _.map(this.project.dependencies(), createDependency),
-                (dependency) => dependency.buildInstall(project, build)
-            )).then(() => {
-                var options = this.project.cmakeOptions(project, build);
-                options["CMAKE_INSTALL_PREFIX"] = project.dirForDependencyInstall(build);
-                return CMake.configure(this.project.root, buildPath, options);
-            }).then(() => {
-                return CMake.build(buildPath);
-            }).then(() => {
-                return CMake.install(buildPath);
-            })
-        };
-    }
-
-    export function createDependency(dependencyDescriptor : RaftFile.DependencyDescriptor) {
-        var repo = createRepository(dependencyDescriptor.repository);
-        var buildSystem = dependencyDescriptor.buildSystem;
-        if (buildSystem === "cmake") {
-            return new CMakeDependency(dependencyDescriptor.name, repo);
-        } else if (buildSystem === "raft") {
-            return new RaftDependency(dependencyDescriptor.name, repo);
-        } else {
-            throw Error("unknown build system type");
-        }
-    }
-
-    export function createRepository(repoDescriptor : RaftFile.RepositoryDescriptor) : VCS.Repository {
-        console.log("Repo Branch: " + repoDescriptor.branch);
-        if (repoDescriptor.type) {
-            return new VCS.GitRepository(repoDescriptor.location, repoDescriptor.branch);
-        } else {
-            throw Error("Unknown repository type");
-        }
-    }
-
-    export function getDependency(project : Project, build : BuildConfig.Build, dependency : Dependency) {
-        raftlog(dependency.name, "Downloading");
-        return dependency.download(project, build)
+        return CMake.configure(sourceLocation, buildLocation, cmakeOptions)
         .then(() => {
-            raftlog(dependency.name, "Building");
-            return dependency.buildInstall(project, build);
+            return CMake.build(buildLocation);
         }).then(() => {
-            raftlog(dependency.name, "Ready");
+            return CMake.install(buildLocation);
         });
     }
 }
-export = Dependency;
+
+/**
+ * Download, build, and install the dependency for the project and build configuration.
+ * @param  {Project}           project    The root raft project.
+ * @param  {BuildConfig.Build} build      The configuration of the current build.
+ * @param  {Dependency}        dependency The dependency that is being built.
+ * @return {Promise<any>}                 A promise that resolves once the dependency is ready for use.
+ */
+export function getDependency(project : Project, build : BuildConfig.Build, dependency : Dependency) {
+    raftlog(dependency.name, "Downloading");
+    return dependency.download(project, build)
+    .then(() => {
+        raftlog(dependency.name, "Building");
+        return dependency.buildInstall(project, build);
+    }).then(() => {
+        raftlog(dependency.name, "Ready");
+    });
+}

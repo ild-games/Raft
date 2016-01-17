@@ -6,13 +6,16 @@ import Path = require('./Path');
 import Project = require('./Project');
 import Promise = require('bluebird');
 import Template = require('./Template');
+import RaftFile = require('./RaftFile');
+import VCS = require('./VCS');
 import raftlog = require('./Log');
 
-export function defaultAction() {
-    return build();
-}
-
-export function build(options : {platform? : string, architecture? : string} = {}) {
+/**
+ * Build the raft project the user is currently in.
+ * @param  {object} options Can be used to specify the parameters for the build configuration.
+ * @return {Promise}        A promise that resolves once the build is finished.
+ */
+export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
     var buildSettings : BuildConfig.Build = {
         isDeploy : false,
         platform : "host",
@@ -25,7 +28,7 @@ export function build(options : {platform? : string, architecture? : string} = {
         raftlog("Project", `Getting ${dependencies.length} for the project`);
         return Promise
         .all(_.map(
-            _.map(dependencies, Dependency.createDependency),
+            _.map(dependencies, RaftFile.createDependency),
             (dependency) => Dependency.getDependency(project, buildSettings, dependency)
         )).then(function (){
             return project.build(buildSettings);
@@ -33,9 +36,13 @@ export function build(options : {platform? : string, architecture? : string} = {
     });
 }
 
-export function create() {
+/**
+ * Create a new project in the current directory
+ * @return {Promise<any>} A promise that resolves when the new project is ready.
+ */
+export function create() : Promise<any> {
     raftlog("Project", "Creating a new project");
-    var templateDir = new Path("/home/jeff/Code/ILikeDucks/AnconaTemplateGame");
+    var repo = new VCS.GitRepository("https://github.com/tlein/AnconaTemplateGame");
     var destinationDir = Path.cwd();
 
     var context = {
@@ -43,5 +50,5 @@ export function create() {
         gameAbbr : "TG"
     }
 
-    return Template.useTemplate(templateDir, destinationDir, context);
+    return Template.instatiateRepositoryTemplate(repo, destinationDir, context);
 }

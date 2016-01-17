@@ -1,12 +1,21 @@
 
-Dependency Managment
+Dependency Management
 + Build and Install CMAKE/Git Projects
-- Build and install Raft/Git Project
-- Install the Raft Project's Dependencies
++ Build and install Raft/Git Project
++ Install the Raft Project's Dependencies
+- Deduplicate dependencies
 
 Build
 + Configure and Build Project Dependencies
 + Configure and Build the project
+- Should support an Android build
+
+Command Line
++ The default command should instruct the user how to use raft.
++ There should be a build option that builds the project for the host platform.
++ There should be a create option that creates a new project in the current directory.
+- The create command should have an optional project source.
+- The build option should have platform and architecture options.
 
 Run
 - Run the main target
@@ -17,15 +26,16 @@ Package
 
 Template
 + Allow using template directories
-- Allow creating a game from a template to be machine agnostic
++ Allow creating a game from a template to be machine agnostic
 
 Usability
 - Write process stdout and stderr to files on failure
 - Clean up / beautify the log output
 - Check for all required programs before starting build
+- Show progress bars for the status of each dependency
 
 CMake
++ include ${RAFT} to pull let raft configure the build
 - Create raft module and add it to CMAKE_PATH
-- include ${RAFT} to pull let raft configure the build
 - Allow for linking Whole libraries
 - Support targeting Android build

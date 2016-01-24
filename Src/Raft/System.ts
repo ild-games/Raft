@@ -1,4 +1,5 @@
 import child_process = require('child_process');
+import _ = require('underscore');
 import Promise = require('bluebird');
 
 import Path = require('./Path');
@@ -27,18 +28,21 @@ export interface ExecuteOptions {
 
 /**
  * Execute a command in a child process.
- * @param  {string}                 command Shell command to execute.
- * @param  {ExecuteOptions}         options
- * @return {Promise<ProcessOutput>}         Promise that resolves to the process's output.       
+ * @param  {string}                 command  Shell command to execute.
+ * @param  {string []}              args     Array of arguments that will be passed to the command. Note: The args argument is not optional in order to remind people not to pass arguments by concatenating them to the command string.
+ * @param  {ExecuteOptions}         options  (Optional) @see ExecuteOptions
+ * @return {Promise<ProcessOutput>}          Promise that resolves to the process's output.
  */
-export function execute(command : string, options? : ExecuteOptions) : Promise<ProcessOutput> {
+export function execute(command : string, args : string [], options? : ExecuteOptions) : Promise<ProcessOutput> {
     options = options || {};
     var start = Promise.resolve();
     var nodeOptions : {cwd? : string} = {};
-    var tag = options.tag || command;
+    var wrappedArgs = _.map(args, (arg) => `"${arg}"`);
+    var cmdStr = [command].concat(wrappedArgs).join(" ");
+    var tag = options.tag || cmdStr;
 
     if (options.cwd) {
-        raftlog(command,`Running in ${options.cwd.toString()}`);
+        raftlog(tag, `Running in ${options.cwd.toString()}`);
         nodeOptions.cwd = options.cwd.toString();
         //Create the working directory if it does not exist.
         start = options.cwd.createDirectory().then((created) => {
@@ -50,9 +54,10 @@ export function execute(command : string, options? : ExecuteOptions) : Promise<P
         raftlog(tag, "Running in the current working directory");
     }
 
+
     return start.then(() => {
         return Promise.fromNode((callback) => {
-            child_process.exec(command, nodeOptions, callback);
+            child_process.exec(cmdStr, nodeOptions, callback);
         }, {multiArgs : true});
     }).then((buffers : Buffer []) => {
         raftlog(tag, "Finished successfullly");

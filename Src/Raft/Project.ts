@@ -21,6 +21,7 @@ class Project {
     private static DEPENDENCY_INSTALL_DIR = Project.DEPENDENCY_DIR.append('install');
     private static DEPENDENCY_LIB_DIR = new Path('lib');
     private static DEPENDENCY_INC_DIR = new Path('include');
+    private static DEPENDENCY_FRAMEWORK_DIR = new Path(CMake.FRAMEWORK_PREFIX);
 
     private raftfile : RaftFile.Root;
 
@@ -90,10 +91,10 @@ class Project {
     dirForDependencyBuild(name : string, build : BuildConfig.Build) {
         return this.root.append(
             Project.DEPENDENCY_BUILD_DIR,
-            build.platform,
+            BuildConfig.Platform[build.platform],
             build.architecture,
             name);
-        }
+    }
 
     /**
      * Get the folder where the dependencies should be installed.
@@ -103,7 +104,7 @@ class Project {
     dirForDependencyInstall(build :BuildConfig.Build) {
         return this.root.append(
             Project.DEPENDENCY_INSTALL_DIR,
-            build.platform,
+            BuildConfig.Platform[build.platform],
             build.architecture);
     }
 
@@ -112,7 +113,7 @@ class Project {
      * @param  {BuildConfig.Build} build The configuration for the current build.
      * @return {Path}                  Path describing where the library binaries should be installed.
      */
-    dirForDependencyLib(build :BuildConfig.Build) {
+    dirForDependencyLib(build : BuildConfig.Build) {
         return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_LIB_DIR);
     }
 
@@ -121,8 +122,17 @@ class Project {
      * @param  {BuildConfig.Build} build The configuration for the current build.
      * @return {Path}                  Path describing where the dependency headers should be installed.
      */
-    dirForDependencyInc(build :BuildConfig.Build) {
+    dirForDependencyInc(build : BuildConfig.Build) {
         return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_INC_DIR);
+    }
+
+    /**
+     * Get the folder where the dependency frameworks should be installed.
+     * @param  {BuildConfig.Build} build The configuration for the current build.
+     * @return {[type]}                  Path describing where the framework headers should be installed.
+     */
+    dirForDependencyFramework(build : BuildConfig.Build) {
+        return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_FRAMEWORK_DIR);
     }
 
     /**
@@ -158,15 +168,20 @@ class Project {
      * @param  {BuildConfig.Build} build       Configuration for the current build.
      * @return {object}                        CMake options that should be used for the build.
      */
-    cmakeOptions(rootProject : Project, build : BuildConfig.Build) {
-        return {
-            RAFT : CMake.raftCmakeFile().toString(),
-            RAFT_INCLUDE_DIR : rootProject.dirForDependencyInc(build).toString(),
-            RAFT_LIB_DIR : rootProject.dirForDependencyLib(build).toString(),
-            RAFT_IS_DESKTOP : true,
-            RAFT_IS_ANDROID : false,
-            CMAKE_INSTALL_PREFIX : this.root.append('install')
+    cmakeOptions(rootProject : Project, build : BuildConfig.Build) : CMake.CMakeOptions {
+        var installPath : Path;
+        if (this === rootProject) {
+            installPath = this.root.append("install");
+        } else {
+            installPath = rootProject.dirForDependencyInstall(build);
         }
+
+        return CMake.CMakeOptions
+            .create(installPath)
+            .raftIncludeDir(rootProject.dirForDependencyInc(build))
+            .raftLibDir(rootProject.dirForDependencyLib(build))
+            .raftFrameworkDir(rootProject.dirForDependencyFramework(build))
+            .platform(build.platform);
     }
 
     /**

@@ -129,7 +129,6 @@ export class RaftDependency extends Dependency.RepositoryDependency {
             (dependency) => dependency.buildInstall(project, build)
         )).then(() => {
             var options = this.project.cmakeOptions(project, build);
-            options["CMAKE_INSTALL_PREFIX"] = project.dirForDependencyInstall(build);
             return CMake.configure(this.project.root, buildPath, options);
         }).then(() => {
             return CMake.build(buildPath);

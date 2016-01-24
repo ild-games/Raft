@@ -75,7 +75,7 @@ export class CMakeDependency extends RepositoryDependency {
         var sourceLocation = project.dirForDependency(this.name);
         var buildLocation = project.dirForDependencyBuild(this.name, build);
         var installLocation = project.dirForDependencyInstall(build);
-        var cmakeOptions = { CMAKE_INSTALL_PREFIX : installLocation.toString()};
+        var cmakeOptions = CMake.CMakeOptions.create(installLocation);
 
         return CMake.configure(sourceLocation, buildLocation, cmakeOptions)
         .then(() => {

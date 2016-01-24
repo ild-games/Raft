@@ -18,7 +18,7 @@ import raftlog = require('./Log');
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
     var buildSettings : BuildConfig.Build = {
         isDeploy : false,
-        platform : "host",
+        platform : BuildConfig.Platform.Host,
         architecture : "host"
     };
 

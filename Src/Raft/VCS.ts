@@ -47,12 +47,12 @@ export class GitRepository implements Repository {
 
 function getGitRepo(uri : string, destination : Path) {
     if (destination.exists()) {
-        return System.execute(`git pull`, { cwd : destination});
+        return System.execute(`git`, [`pull`], { cwd : destination});
     } else {
-        return System.execute(`git clone ${uri} ${destination.toString()}`);
+        return System.execute(`git`, [`clone`, uri, destination.toString()]);
     }
 }
 
 function checkoutBranch(repo : Path, branchName : string) {
-    return System.execute(`git checkout ${branchName}`, { cwd : repo});
+    return System.execute(`git`, [`checkout`, branchName], { cwd : repo});
 }

@@ -35,7 +35,6 @@ export class GitRepository implements Repository {
     * @see VCS.Repository.download
     */
     download(destination : Path) {
-        console.log(`Getting repo: ${this.uri} branch: ${this.branch}`)
         return getGitRepo(this.uri, destination)
         .then(() => {
             if (this.branch) {

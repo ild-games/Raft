@@ -80,7 +80,7 @@ class Path {
      *                            created and false if it already existed.
      */
     createDirectory() : Promise<boolean> {
-        return Promise.fromNode((callback) => {
+        return Promise.fromCallback((callback) => {
             mkdirp(this.path, callback);
         }).then((success) => {
             return true;

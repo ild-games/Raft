@@ -1,10 +1,11 @@
 import _ = require('underscore');
+import Promise = require('bluebird');
+import Promptly = require('promptly');
 
 import BuildConfig = require('./BuildConfig');
 import Dependency = require('./Dependency');
 import Path = require('./Path');
 import Project = require('./Project');
-import Promise = require('bluebird');
 import Template = require('./Template');
 import RaftFile = require('./RaftFile');
 import VCS = require('./VCS');
@@ -16,10 +17,12 @@ import raftlog = require('./Log');
  * @return {Promise}        A promise that resolves once the build is finished.
  */
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
+
+    //TODO implement platform and architecture arguments
     var buildSettings : BuildConfig.Build = {
         isDeploy : false,
         platform : BuildConfig.Platform.Host,
-        architecture : "host"
+        architecture : BuildConfig.Architecture.Host
     };
 
     return Project.find(Path.cwd())
@@ -45,10 +48,32 @@ export function create() : Promise<any> {
     var repo = new VCS.GitRepository("https://github.com/tlein/AnconaTemplateGame");
     var destinationDir = Path.cwd();
 
-    var context = {
-        gameName : "TestGame",
-        gameAbbr : "TG"
+    function isValid(input : string) {
+        var regex = /^[a-z]+$/i;
+
+        if (!regex.test(input)) {
+            throw Error("The name cannot contain any spaces.");
+        }
+
+        return input;
     }
 
-    return Template.instatiateRepositoryTemplate(repo, destinationDir, context);
+    function ask(question : string) : Promise<any> {
+        return Promise.fromCallback((callback) => {
+            Promptly.prompt(question, {validator : isValid}, callback);
+        });
+    }
+
+    var context = {
+        gameName : "",
+        gameAbbr : ""
+    }
+
+    return ask("Game Name (Ex Duckling): ").then((gameName) => {
+        context.gameName = gameName;
+        return ask("Game Abbreviation (Ex DUC): ");
+    }).then((gameAbbr) => {
+        context.gameAbbr = gameAbbr;
+        return Template.instatiateRepositoryTemplate(repo, destinationDir, context);
+    });
 }

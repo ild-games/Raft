@@ -1,8 +1,0 @@
-
-CMakeList.txt interface
-
-RAFT_LIB_DIR
-RAFT_INCLUDE_DIR
-RAFT_MODULE_DIR
-
-import (RAFT)

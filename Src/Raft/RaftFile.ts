@@ -83,7 +83,6 @@ export function createDependency(dependencyDescriptor : DependencyDescriptor) {
  * @return {VCS.Repository}                               An object that can be used to interact with the repository.
  */
 export function createRepository(repoDescriptor : RepositoryDescriptor) : VCS.Repository {
-    console.log("Repo Branch: " + repoDescriptor.branch);
     if (repoDescriptor.type) {
         return new VCS.GitRepository(repoDescriptor.location, repoDescriptor.branch);
     } else {

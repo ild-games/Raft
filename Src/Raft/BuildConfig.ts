@@ -3,10 +3,14 @@
  */
 export interface Build {
     platform : Platform;
-    architecture : string;
+    architecture : Architecture;
     isDeploy : boolean;
 }
 
 export enum Platform {
+    Host
+}
+
+export enum Architecture {
     Host
 }

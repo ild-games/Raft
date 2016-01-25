@@ -6,7 +6,7 @@ import System = require('./System');
 
 module CMake {
 
-    export const FRAMEWORK_PREFIX = "framework";
+    export const FRAMEWORK_DIR = "framework";
 
     //CMake Constants
     const CMAKE_TRUE = "true";
@@ -26,10 +26,10 @@ module CMake {
 
     /**
      * Configure a cmake project.
-     * @param  {Path}         srcPath   Root of the cmake project.
-     * @param  {Path}         buildPath Directory the configuration was stored in.
-     * @param  {any}          options   Set of Key Values that will be passed to CMake as configuration options.
-     * @return {Promise<any>}           Promise that resolves once the cmake configuration is complete.
+     * @param  {Path}          srcPath   Root of the cmake project.
+     * @param  {Path}          buildPath Directory the configuration was stored in.
+     * @param  {CMakeOptions}  options   The options that will be used for the build.
+     * @return {Promise<any>}            Promise that resolves once the cmake configuration is complete.
      */
     export function configure(
                             srcPath : Path,
@@ -55,7 +55,7 @@ module CMake {
         static create(installDir : Path) {
             var result = new CMakeOptions();
             result = result.setPath(CMAKE_INSTALL_PREFIX, installDir);
-            result = result.setPath(CMAKE_INSTALL_FRAMEWORK_PREFIX, installDir.append(FRAMEWORK_PREFIX));
+            result = result.setPath(CMAKE_INSTALL_FRAMEWORK_PREFIX, installDir.append(FRAMEWORK_DIR));
             return result.setPath(RAFT, raftCmakeFile());
         }
 
@@ -115,10 +115,9 @@ module CMake {
          * @return {string} Options set as CMake flags.
          */
         toArray() : string [] {
-            return _.chain(_.pairs(this.options))
-                    .map((option : string[]) => {
+            return  _.map(_.pairs(this.options), (option : string[]) => {
                         return `-D${option[0]}=${option[1]}`
-                    }).value();
+                    });
         }
 
         private setPath(key : string, value : Path) {

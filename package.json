@@ -1,6 +1,6 @@
 {
   "name": "Raft",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Duck automation software.",
   "main": "./release/lib/Raft/index.js",
   "scripts": {
@@ -22,6 +22,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "mustache": "^2.2.1",
+    "promptly": "^1.0.0",
     "rimraf": "^2.5.0",
     "underscore": "^1.8.3",
     "yargs": "~3.31.0"

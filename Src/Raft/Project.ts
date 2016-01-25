@@ -21,7 +21,7 @@ class Project {
     private static DEPENDENCY_INSTALL_DIR = Project.DEPENDENCY_DIR.append('install');
     private static DEPENDENCY_LIB_DIR = new Path('lib');
     private static DEPENDENCY_INC_DIR = new Path('include');
-    private static DEPENDENCY_FRAMEWORK_DIR = new Path(CMake.FRAMEWORK_PREFIX);
+    private static DEPENDENCY_FRAMEWORK_DIR = new Path(CMake.FRAMEWORK_DIR);
 
     private raftfile : RaftFile.Root;
 
@@ -35,20 +35,17 @@ class Project {
     *  @return Returns the project if it exists or null if it does not.
     */
     static find(path : Path) : Promise<Project> {
-        var paths = [path];
         var raftDir = new Path("Raft");
+        var currentPath = path;
 
-        while (!_.last(paths).isRoot()) {
-            paths.push(_.last(paths).parent());
+        while (!currentPath.isRoot()) {
+            if (currentPath.append(raftDir).exists()) {
+                return (new Project(currentPath)).load();
+            }
+            currentPath = currentPath.parent();
         }
 
-        var rootDir = _.first(_.filter(paths, (path) => path.append(raftDir).exists()));
-
-        if (rootDir) {
-            return (new Project(rootDir)).load();
-        } else {
-            return Promise.reject(null);
-        }
+        return Promise.reject(null);
     }
 
     /**
@@ -60,14 +57,13 @@ class Project {
         .then((data) => {
             raftlog("Project Data", data);
             this.raftfile = JSON.parse(data);
-            raftlog("Project Data", JSON.stringify(this.raftfile));
             return this;
         });
     }
 
     /**
      * Get the dependency descriptor's contained in the project's raftfile.
-     * @return {RaftFile.DependencyDescriptor} [description]
+     * @return {RaftFile.DependencyDescriptor} The raw dependencies available in the raft file.
      */
     dependencies() : RaftFile.DependencyDescriptor [] {
         return this.raftfile.dependencies.slice(0);
@@ -92,7 +88,7 @@ class Project {
         return this.root.append(
             Project.DEPENDENCY_BUILD_DIR,
             BuildConfig.Platform[build.platform],
-            build.architecture,
+            BuildConfig.Architecture[build.architecture],
             name);
     }
 
@@ -105,7 +101,7 @@ class Project {
         return this.root.append(
             Project.DEPENDENCY_INSTALL_DIR,
             BuildConfig.Platform[build.platform],
-            build.architecture);
+            BuildConfig.Architecture[build.architecture]);
     }
 
     /**
@@ -138,9 +134,9 @@ class Project {
     /**
      * Get the directory the project should be built in.
      * @param  {BuildConfig.Build} build The current build configuration.
-     * @return {Path}                  [description]
+     * @return {Path}                    The directory the project should be built in.
      */
-    dirForBuild(build :BuildConfig.Build) {
+    dirForBuild(build : BuildConfig.Build) {
         if (build.isDeploy) {
             throw Error("deploy has not been implemented");
         } else {

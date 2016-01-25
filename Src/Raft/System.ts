@@ -35,7 +35,7 @@ export interface ExecuteOptions {
  */
 export function execute(command : string, args : string [], options? : ExecuteOptions) : Promise<ProcessOutput> {
     options = options || {};
-    var start = Promise.resolve();
+    var directoryCreated : Promise<any>;
     var nodeOptions : {cwd? : string} = {};
     var wrappedArgs = _.map(args, (arg) => `"${arg}"`);
     var cmdStr = [command].concat(wrappedArgs).join(" ");
@@ -45,17 +45,17 @@ export function execute(command : string, args : string [], options? : ExecuteOp
         raftlog(tag, `Running in ${options.cwd.toString()}`);
         nodeOptions.cwd = options.cwd.toString();
         //Create the working directory if it does not exist.
-        start = options.cwd.createDirectory().then((created) => {
+        directoryCreated = options.cwd.createDirectory().then((created) => {
             if (created) {
                 raftlog(tag, `Created ${options.cwd.toString()}`);
             }
         });
     } else {
+        directoryCreated = Promise.resolve(); //No need to create directory
         raftlog(tag, "Running in the current working directory");
     }
 
-
-    return start.then(() => {
+    return directoryCreated.then(() => {
         return Promise.fromNode((callback) => {
             child_process.exec(cmdStr, nodeOptions, callback);
         }, {multiArgs : true});

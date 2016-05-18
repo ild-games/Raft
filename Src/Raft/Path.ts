@@ -3,6 +3,7 @@ import npath = require('path');
 import mkdirp = require('mkdirp');
 import _ = require('underscore');
 import Promise = require('bluebird')
+import os = require('os');
 
 /**
  * A class that is used to interact with paths. Instances of the path class are immutable.
@@ -109,6 +110,14 @@ class Path {
      */
     static cwd() : Path {
         return new Path(process.cwd());
+    }
+
+    /**
+     * Get the path for the user's home directory.
+     * @return {Path} A new path describing the user's home directory.
+     */
+    static home() : Path {
+        return new Path(os.homedir());
     }
 
 }

@@ -3,6 +3,7 @@ import Promise = require('bluebird');
 import Promptly = require('promptly');
 
 import BuildConfig = require('./BuildConfig');
+import Config = require('./Config');
 import Dependency = require('./Dependency');
 import Path = require('./Path');
 import Project = require('./Project');
@@ -45,10 +46,10 @@ export function build(options : {platform? : string, architecture? : string} = {
  */
 export function create() : Promise<any> {
     raftlog("Project", "Creating a new project");
-    var repo = new VCS.GitRepository("https://github.com/tlein/AnconaTemplateGame");
+    var repo = new VCS.GitRepository(Config.getOption("templateRepo"));
     var destinationDir = Path.cwd();
 
-    function isValid(input : string) {
+    function isValidName(input : string) {
         var regex = /^[a-z]+$/i;
 
         if (!regex.test(input)) {
@@ -58,9 +59,29 @@ export function create() : Promise<any> {
         return input;
     }
 
-    function ask(question : string) : Promise<any> {
+    function isValidDirectory(input : string) {
+        var path = new Path(input);
+
+        if (!path.exists()) {
+            throw Error("Path does not exist.");
+        }
+
+        return input;
+    }
+
+    function ask(question : string, validator? : (input: string) => string) : Promise<any> {
         return Promise.fromCallback((callback) => {
-            Promptly.prompt(question, {validator : isValid}, callback);
+            if (validator) {
+                Promptly.prompt(question, {validator : validator}, callback);
+            } else {
+                Promptly.prompt(question, callback);
+            }
+        });
+    }
+
+    function askYesNo(question : string) : Promise<any> {
+        return Promise.fromCallback((callback) => {
+            Promptly.confirm(question, callback);
         });
     }
 
@@ -69,11 +90,31 @@ export function create() : Promise<any> {
         gameAbbr : ""
     }
 
-    return ask("Game Name (Ex Duckling): ").then((gameName) => {
+    return ask("Game Name (Ex Duckling): ", isValidName).then((gameName) => {
         context.gameName = gameName;
-        return ask("Game Abbreviation (Ex DUC): ");
+        return ask("Game Abbreviation (Ex DUC): ", isValidName);
     }).then((gameAbbr) => {
         context.gameAbbr = gameAbbr;
-        return Template.instatiateRepositoryTemplate(repo, destinationDir, context);
+        return askYesNo("Pull template from repo?");
+    }).then((pullFromRepo) => {
+        if (pullFromRepo) {
+            return Template.instatiateRepositoryTemplate(repo, destinationDir, context);
+        } else {
+            var defaultTemplatePath = Config.getOption("defaultTemplatePath");
+            return askYesNo("Use default template directory in ~/.raftconfig? (" + defaultTemplatePath + "): ").then((useDefaultTemplateDir) => {
+                if (useDefaultTemplateDir) {
+                    return Template.instantiateTemplate(
+                        new Path(defaultTemplatePath),
+                        destinationDir,
+                        context);
+                }
+                return ask("Enter directory of template game: ", isValidDirectory).then((templateDir) => {
+                    return Template.instantiateTemplate(
+                        new Path(templateDir),
+                        destinationDir,
+                        context);
+                });
+            });
+        }
     });
 }

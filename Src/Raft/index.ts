@@ -1,3 +1,4 @@
 export = {
-    Action : require('./CLIActions')
+    Action : require('./CLIActions'),
+    Config : require('./Config')
 }

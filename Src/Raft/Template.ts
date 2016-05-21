@@ -23,7 +23,7 @@ module Template {
      */
     export function instantiateTemplate(templatePath : Path, destination : Path, context : any) : Promise<any> {
         return new Promise((resolve, reject) => {
-            var stream = gulp.src(templatePath.append("**").toString())
+            var stream = gulp.src([templatePath.append("**").toString(), '!' + templatePath.append('index.js').toString()])
                 .pipe(mustache(context))
                 .pipe(rename(function(parsedpath : ParsedPath) {
                     return renameFile(parsedpath, context);
@@ -41,7 +41,7 @@ module Template {
      * @param  {any}            context      Values in the context will be available in the templates.
      * @return {Promise<any>}                The promise will resolve after the template is instantiated.
      */
-    export function instatiateRepositoryTemplate(repo : VCS.Repository, destination : Path, context : any) {
+    export function instantiateRepositoryTemplate(repo : VCS.Repository, destination : Path, context : any) {
         var repoLocation = destination.append(".template");
         return repo.download(repoLocation)
         .then(() => {

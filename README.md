@@ -17,7 +17,8 @@ In the future this will likely be wrapped up in an npm package.  Until then you 
 3. Run `npm install`.
 4. Change into the TSD directory and run `tsd install`.
 5. Run `gulp` to compile the typescript files.
-6. Add the following to your bashrc:
+6. Clone the contents of the templates directory into ~/.raft/templates/ (https://github.com/tlein/AnconaTemplateGame)
+7. Add the following to your bashrc:
 ```
 export RAFT_PATH=<Path to the root directory of the raft repo>
 export PATH=$PATH:$RAFT_PATH/release/bin

@@ -1,6 +1,7 @@
 import _ = require('underscore');
 import Promise = require('bluebird');
 import Promptly = require('promptly');
+import colors = require('colors');
 
 import BuildConfig = require('./BuildConfig');
 import Dependency = require('./Dependency');
@@ -40,40 +41,40 @@ export function build(options : {platform? : string, architecture? : string} = {
 }
 
 /**
- * Create a new project in the current directory
- * @return {Promise<any>} A promise that resolves when the new project is ready.
+ * Create an instance of a specified template.
+ * @param  {string} templateType The type of template we're creating an instance of.
+ * @return {Promise<any>}        A promise that resolves when the new template instance is ready.
  */
-export function create() : Promise<any> {
-    raftlog("Project", "Creating a new project");
-    var repo = new VCS.GitRepository("https://github.com/tlein/AnconaTemplateGame");
-    var destinationDir = Path.cwd();
-
-    function isValid(input : string) {
-        var regex = /^[a-z]+$/i;
-
-        if (!regex.test(input)) {
-            throw Error("The name cannot contain any spaces.");
-        }
-
-        return input;
+export function create(templateType : string) : Promise<any> {
+    var templateDir = Path.home().append('.raft/templates/' + templateType + '/');
+    if (!templateDir.append('index.js').exists()) {
+        throw new Error(errorMessage("No index.js at " + templateDir));
     }
 
-    function ask(question : string) : Promise<any> {
-        return Promise.fromCallback((callback) => {
-            Promptly.prompt(question, {validator : isValid}, callback);
-        });
-    }
-
-    var context = {
-        gameName : "",
-        gameAbbr : ""
-    }
-
-    return ask("Game Name (Ex Duckling): ").then((gameName) => {
-        context.gameName = gameName;
-        return ask("Game Abbreviation (Ex DUC): ");
-    }).then((gameAbbr) => {
-        context.gameAbbr = gameAbbr;
-        return Template.instatiateRepositoryTemplate(repo, destinationDir, context);
+    var templateSetup = require(templateDir.toString());
+    var templateArgs = {
+        Promise: Promise,
+        Path: Path,
+        prompt: {
+            ask: ask
+        },
+        errorMessage: errorMessage
+    };
+    return templateSetup(templateArgs).then((context : any) => {
+        return Template.instantiateTemplate(templateDir, Path.cwd(), context);
     });
+};
+
+function ask(question : string, validatorFunction? : (input : string) => string) : Promise<any> {
+    return Promise.fromCallback((callback) => {
+        if (validatorFunction) {
+            Promptly.prompt(question, {validator : validatorFunction}, callback);
+        } else {
+            Promptly.prompt(question, callback);
+        }
+    });
+}
+
+function errorMessage(msg : string) : string {
+    return colors.red.underline("Error") + ": " + msg;
 }

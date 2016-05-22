@@ -15,6 +15,12 @@ module CMake {
     //CMake Options
     const CMAKE_INSTALL_PREFIX = "CMAKE_INSTALL_PREFIX";
     const CMAKE_INSTALL_FRAMEWORK_PREFIX = "CMAKE_INSTALL_FRAMEWORK_PREFIX";
+    const CMAKE_TOOLCHAIN = "CMAKE_TOOLCHAIN_FILE";
+
+    //Android CMake Options
+    const ANDROID_ABI = "ANDROID_ABI";
+    const ANDROID_STL = "ANDROID_STL";
+    const ANDROID_NATIVE_API_LEVEL = "ANDROID_NATIVE_API_LEVEL";
 
     //Raft CMake Options
     const RAFT = "RAFT";
@@ -104,6 +110,14 @@ module CMake {
                     result.options[RAFT_IS_DESKTOP] = CMAKE_TRUE;
                     result.options[RAFT_IS_ANDROID] = CMAKE_FALSE;
                     break;
+                case BuildConfig.Platform.Android:
+                    result.options[RAFT_IS_DESKTOP] = CMAKE_FALSE;
+                    result.options[RAFT_IS_ANDROID] = CMAKE_TRUE;
+                    result.options[ANDROID_ABI] = "armeabi"; //TODO support more architectures
+                    result.options[ANDROID_STL] = "gnustl_shared"; //TODO ues clang
+                    result.options[ANDROID_NATIVE_API_LEVEL] = "android-18";
+                    result.options[CMAKE_TOOLCHAIN] = raftAndroidToolchainFile().toString();
+                    break;
                 default:
                     throw Error(`Unsupported platform: ${platform}`);
             }
@@ -170,6 +184,14 @@ module CMake {
      */
     export function raftCmakeFile() {
         return raftCMakeDir().append("Raft.cmake");
+    }
+
+    /**
+     * Get the path to the Android Toolchain file.
+     * @return {Path} Path to the Android toolchain file.
+     */
+    export function raftAndroidToolchainFile() {
+        return raftCMakeDir().append("Toolchains", "android.toolchain.cmake");
     }
 }
 

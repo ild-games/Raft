@@ -1383,6 +1383,9 @@ if( ANDROID_COMPILER_IS_CLANG )
  endif()
 endif()
 
+# Add Linker Flags Used By RAFT
+set (ANDROID_LINKER_FLAGS "-Wl,-L${RAFT_LIB_DIR} ${ANDROID_LINKER_FLAGS}")
+
 # cache flags
 set( CMAKE_CXX_FLAGS           ""                        CACHE STRING "c++ flags" )
 set( CMAKE_C_FLAGS             ""                        CACHE STRING "c flags" )
@@ -1623,7 +1626,6 @@ if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )
  # unset( CMAKE_COMPILER_IS_MINGW ) # can't unset because CMake does not convert back-slashes in response files without it
  unset( MINGW )
 endif()
-
 
 # Variables controlling behavior or set by cmake toolchain:
 #   ANDROID_ABI : "armeabi-v7a" (default), "armeabi", "armeabi-v7a with NEON", "armeabi-v7a with VFPV3", "armeabi-v6 with VFP", "x86", "mips", "arm64-v8a", "x86_64", "mips64"

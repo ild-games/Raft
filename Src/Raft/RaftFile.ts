@@ -3,6 +3,7 @@ import _ = require('underscore');
 import BuildConfig = require('./BuildConfig');
 import CMake = require('./CMake');
 import Dependency = require('./Dependency');
+import Path = require('./Path');
 import Project = require('./Project')
 import VCS = require('./VCS');
 
@@ -12,22 +13,21 @@ import VCS = require('./VCS');
 export interface DependencyDescriptor {
     /**
      * Name that should be used for the dependency.
-     * @type {string}
      */
     name : string,
     /**
      * Describes the repository that can be used to download the dependency.
-     * @type {RepositoryDescriptor}
      */
     repository : RepositoryDescriptor,
     /**
      * Describes the build system used by the dependency.
-     * Options:
-     *     cmake
-     *     raft
-     * @type {string}
      */
-    buildSystem : string
+    buildSystem : "cmake" | "raft",
+    /**
+     * Path to the a patch that should be applied to the dependency before it is build.
+     * The path is evaluated relative to the RAFT directory.
+     */
+    patch? : string
 }
 
 /**
@@ -65,13 +65,19 @@ export interface Root {
  * @param  {RaftFile.DependencyDescriptor} dependencyDescriptor Descriptor of a dependency loaded from a raft file.
  * @return {[type]}                                             An object that can be used to interact with the dependency.
  */
-export function createDependency(dependencyDescriptor : DependencyDescriptor) {
+export function createDependency(dependencyDescriptor : DependencyDescriptor, raftDir : Path) {
     var repo = createRepository(dependencyDescriptor.repository);
     var buildSystem = dependencyDescriptor.buildSystem;
+
+    var patches : Path [] = [];
+    if (dependencyDescriptor.patch) {
+        patches.push(raftDir.append(dependencyDescriptor.patch));
+    }
+
     if (buildSystem === "cmake") {
-        return new Dependency.CMakeDependency(dependencyDescriptor.name, repo);
+        return new Dependency.CMakeDependency(dependencyDescriptor.name, repo, patches);
     } else if (buildSystem === "raft") {
-        return new RaftDependency(dependencyDescriptor.name, repo);
+        return new RaftDependency(dependencyDescriptor.name, repo, patches);
     } else {
         throw Error("unknown build system type");
     }
@@ -102,19 +108,19 @@ export class RaftDependency extends Dependency.RepositoryDependency {
     download(project : Project, build : BuildConfig.Build) : Promise<any> {
         var buildLocation = project.dirForDependency(this.name);
         return super.download(project, build)
-        .then(() => {
-            return Project.find(buildLocation);
-        }).then((thisProject) => {
+        .then(() => Project.find(buildLocation))
+        .then((thisProject) => {
             this.project = thisProject;
 
             if (this.project.root.equals(project.root)) {
                 throw Error(`The Dependency ${this.name} is not a raft dependency`);
             }
 
-            return Promise.all(_.map(
-                _.map(this.project.dependencies(), createDependency),
+            var dependencies = _.map(this.project.dependencies(), (dependency) => createDependency(dependency, this.project.raftDir));
+            return Promise.map(
+                dependencies,
                 (dependency) => dependency.download(project, build)
-            ));
+            );
         });
     }
 
@@ -123,10 +129,12 @@ export class RaftDependency extends Dependency.RepositoryDependency {
      */
     buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> {
         var buildPath = project.dirForDependencyBuild(this.name, build);
-        return Promise.all(_.map(
-            _.map(this.project.dependencies(), createDependency),
+        var dependencies = _.map(this.project.dependencies(), (dependency) => createDependency(dependency, this.project.raftDir));
+
+        return Promise.map(
+            dependencies,
             (dependency) => dependency.buildInstall(project, build)
-        )).then(() => {
+        ).then(() => {
             var options = this.project.cmakeOptions(project, build);
             return CMake.configure(this.project.root, buildPath, options);
         }).then(() => {

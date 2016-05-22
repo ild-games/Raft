@@ -20,23 +20,32 @@ import raftlog = require('./Log');
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
 
     //TODO implement platform and architecture arguments
-    var buildSettings : BuildConfig.Build = {
-        isDeploy : false,
-        platform : BuildConfig.Platform.Host,
-        architecture : BuildConfig.Architecture.Host
-    };
+    var buildSettings : BuildConfig.Build;
+    if (options.platform && options.platform.toUpperCase() === "ANDROID") {
+        buildSettings = {
+            isDeploy : false,
+            platform : BuildConfig.Platform.Android,
+            architecture : BuildConfig.Architecture.armeabi
+        }
+    } else {
+        buildSettings = {
+            isDeploy : false,
+            platform : BuildConfig.Platform.Host,
+            architecture : BuildConfig.Architecture.Host
+        }
+    }
 
-    return Project.find(Path.cwd())
-    .then(function(project) {
-        var dependencies = project.dependencies();
-        raftlog("Project", `Getting ${dependencies.length} for the project`);
-        return Promise
-        .all(_.map(
-            _.map(dependencies, RaftFile.createDependency),
-            (dependency) => Dependency.getDependency(project, buildSettings, dependency)
-        )).then(function (){
-            return project.build(buildSettings);
+    return Project.find(Path.cwd()).then(function(project) {
+        var dependencies = _.map(project.dependencies(), (dependency) => {
+            return RaftFile.createDependency(dependency, project.raftDir)
         });
+
+        raftlog("Project", `Getting ${dependencies.length} for the project`);
+
+        return Promise.map(
+            dependencies,
+            (dependency) => Dependency.getDependency(project, buildSettings, dependency)
+        ).then(() => project.build(buildSettings));
     });
 }
 

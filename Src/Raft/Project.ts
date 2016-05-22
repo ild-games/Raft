@@ -182,8 +182,12 @@ class Project {
 
     /**
      * Root directory of the project.
-     * @type {Path}
      */
     root : Path;
+
+    get raftDir() {
+        return this.root.append("Raft");
+    }
 }
+
 export = Project;

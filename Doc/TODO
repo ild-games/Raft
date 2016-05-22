@@ -39,3 +39,20 @@ CMake
 - Create raft module and add it to CMAKE_PATH
 - Allow for linking Whole libraries
 - Support targeting Android build
+
+Android Build
++ Figure out project situation (The Android project will be part of the template)
++ Needs to output dependencies in Android/<architecture>
++ Need to respect the build Android platform option
++ Update Toolchain file so that it looks for dependencies in the correct folder
+- Need a way to pass CMake options through to the dependency (Use this to supress JsonCPP tests)
+- Need a way to apply patches to a dependency
+
+Android Problems
+- SFML overrides the install directory (Need to provide patch support or fork)
+- JSONCPP likes to run its test (Need to set an option to prevent the test)
+- Need a way to specify a certain tag or branch
+- Don't link the executable during the first build
+- SFML adds its own platform sub directory
+- Need to specify the correct library in the manifest meta-data (sfml.app.lib-name)
+- Need libgnustl_shared and libopenal.so

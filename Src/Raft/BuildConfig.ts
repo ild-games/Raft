@@ -8,9 +8,11 @@ export interface Build {
 }
 
 export enum Platform {
-    Host
+    Host,
+    Android
 }
 
 export enum Architecture {
-    Host
+    Host,
+    armeabi
 }

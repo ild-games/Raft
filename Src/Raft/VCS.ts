@@ -9,10 +9,18 @@ export interface Repository {
     /**
     * Downloads the repository to the given path.  If the repository was previously
     * downloaded, then this command will also update the source.
-    * @param  {Path}         destination Describes where the repository should be downloaded to.
-    * @return {Promise<any>}             A promise that resolves when the repository is ready for use.
+    * @param  destination Describes where the repository should be downloaded to.
+    * @return Promise that resolves when the repository is ready for use.
     */
     download(destination : Path) : Promise<any>;
+
+    /**
+    * Apply a patch to the code located in the directory.
+    * @param  directory Aboslute path to the directory the code is located in.
+    * @param  patch     Absolute path to the patch.
+    * @return A promise that resolves once the patch is applied.
+    */
+     patch(repoDirectory : Path, patch : Path) : Promise<any>;
 }
 
 /**
@@ -42,14 +50,23 @@ export class GitRepository implements Repository {
             }
         });
     }
+
+    /**
+    * @see VCS.Repository.patch
+    */
+     patch(repoDirectory : Path, patch : Path) {
+         if (repoDirectory.exists() && patch.exists()) {
+             return System.execute('git', ['apply', patch.toString()], {cwd : repoDirectory});
+         }
+         return Promise.reject({});
+     }
 }
 
-function getGitRepo(uri : string, destination : Path) {
-    if (destination.exists()) {
-        return System.execute(`git`, [`pull`], { cwd : destination});
-    } else {
+function getGitRepo(uri : string, destination : Path) : Promise<any> {
+    if (!destination.exists()) {
         return System.execute(`git`, [`clone`, uri, destination.toString()]);
     }
+    return Promise.resolve();
 }
 
 function checkoutBranch(repo : Path, branchName : string) {

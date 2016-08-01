@@ -5,10 +5,16 @@ var yargs = require('yargs');
 var argv = yargs
     .usage('Usage: $0 <command>')
     .command('build', 'Build the raft project', function(yargs) {
-        Raft.Action.build();
+        var argv = yargs
+            .usage('Usage: $0 build [options]')
+            .alias('p', 'platform')
+            .describe('p', 'The platform that will be targed by the build. Defaults to Host.')
+            .choices('p', ['Host', 'Android']);
+        console.log(argv);
+        Raft.Action.build(argv);
     })
     .command('create', 'Create an instance of a template', function(yargs) {
-        argv = yargs
+        var argv = yargs
             .usage('Usage: $0 create [options]')
             .demand('t')
             .alias('t', 'template')

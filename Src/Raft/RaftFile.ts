@@ -1,3 +1,4 @@
+import Promise = require('bluebird');
 import _ = require('underscore');
 
 import BuildConfig = require('./BuildConfig');

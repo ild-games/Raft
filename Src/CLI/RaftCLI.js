@@ -9,8 +9,8 @@ var argv = yargs
             .usage('Usage: $0 build [options]')
             .alias('p', 'platform')
             .describe('p', 'The platform that will be targed by the build. Defaults to Host.')
-            .choices('p', ['Host', 'Android']);
-        console.log(argv);
+            .choices('p', ['Host', 'Android'])
+            .argv;
         Raft.Action.build(argv);
     })
     .command('create', 'Create an instance of a template', function(yargs) {

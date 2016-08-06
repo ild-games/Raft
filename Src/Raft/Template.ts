@@ -1,4 +1,5 @@
 import gulp = require('gulp');
+import gulpif = require('gulp-if');
 import mustache = require('gulp-mustache');
 import rename = require('gulp-rename');
 import Promise = require('bluebird');
@@ -24,7 +25,7 @@ module Template {
     export function instantiateTemplate(templatePath : Path, destination : Path, context : any) : Promise<any> {
         return new Promise((resolve, reject) => {
             var stream = gulp.src([templatePath.append("**").toString(), '!' + templatePath.append('index.js').toString()])
-                .pipe(mustache(context))
+                .pipe(gulpif("!**/*.png", mustache(context)))
                 .pipe(rename(function(parsedpath : ParsedPath) {
                     return renameFile(parsedpath, context);
                 }))

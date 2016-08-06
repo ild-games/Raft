@@ -8,14 +8,16 @@ import Dependency = require('./Dependency');
 import Path = require('./Path');
 import Project = require('./Project');
 import Template = require('./Template');
-import RaftFile = require('./RaftFile');
 import VCS = require('./VCS');
 import raftlog = require('./Log');
 
+import {createDependency} from './RaftFileParser';
+import {beforeBuild} from './Hooks'
+
 /**
  * Build the raft project the user is currently in.
- * @param  {object} options Can be used to specify the parameters for the build configuration.
- * @return {Promise}        A promise that resolves once the build is finished.
+ * @param  options Can be used to specify the parameters for the build configuration.
+ * @return A promise that resolves once the build is finished.
  */
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
 
@@ -37,15 +39,16 @@ export function build(options : {platform? : string, architecture? : string} = {
 
     return Project.find(Path.cwd()).then(function(project) {
         var dependencies = _.map(project.dependencies(), (dependency) => {
-            return RaftFile.createDependency(dependency, project.raftDir)
+            return createDependency(dependency, project.raftDir)
         });
 
         raftlog("Project", `Getting ${dependencies.length} for the project`);
 
         return Promise.map(
             dependencies,
-            (dependency) => Dependency.getDependency(project, buildSettings, dependency)
-        ).then(() => project.build(buildSettings));
+            (dependency) => Dependency.getDependency(project, buildSettings, dependency))
+        .then(() => beforeBuild(project, buildSettings))
+        .then(() => project.build(buildSettings));
     });
 }
 

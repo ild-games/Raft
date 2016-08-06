@@ -7,59 +7,8 @@ import Dependency = require('./Dependency');
 import Path = require('./Path');
 import Project = require('./Project')
 import VCS = require('./VCS');
+import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './RaftFileDescriptor';
 
-/**
- * Included in raftfiles to allow configuration of Dependencies.
- */
-export interface DependencyDescriptor {
-    /**
-     * Name that should be used for the dependency.
-     */
-    name : string,
-    /**
-     * Describes the repository that can be used to download the dependency.
-     */
-    repository : RepositoryDescriptor,
-    /**
-     * Describes the build system used by the dependency.
-     */
-    buildSystem : "cmake" | "raft",
-    /**
-     * Path to the a patch that should be applied to the dependency before it is build.
-     * The path is evaluated relative to the RAFT directory.
-     */
-    patch? : string
-}
-
-/**
- * Included in raftfiles to allow configuration of source repositories.
- */
-export interface RepositoryDescriptor {
-    /**
-     * The type of repository.
-     * Options:
-     *     git
-     * @type {string}
-     */
-    type : string,
-    /**
-     * a URI describing where the repository can be found.
-     * @type {string}
-     */
-    location : string,
-    /**
-     * Optional paramater used to describe the branch that should be used.
-     * @type {[type]}
-     */
-    branch? : string
-}
-
-/**
- * Describes the possible format of a RaftFile used to describe raft projects..
- */
-export interface Root {
-    dependencies : DependencyDescriptor[];
-}
 
 /**
  * Create a Dependency object given a dependency descriptor from a raftfile.
@@ -76,9 +25,9 @@ export function createDependency(dependencyDescriptor : DependencyDescriptor, ra
     }
 
     if (buildSystem === "cmake") {
-        return new Dependency.CMakeDependency(dependencyDescriptor.name, repo, patches);
+        return new Dependency.CMakeDependency(dependencyDescriptor, repo, patches);
     } else if (buildSystem === "raft") {
-        return new RaftDependency(dependencyDescriptor.name, repo, patches);
+        return new RaftDependency(dependencyDescriptor, repo, patches);
     } else {
         throw Error("unknown build system type");
     }

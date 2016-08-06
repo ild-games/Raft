@@ -45,10 +45,12 @@ Android Build
 + Needs to output dependencies in Android/<architecture>
 + Need to respect the build Android platform option
 + Update Toolchain file so that it looks for dependencies in the correct folder
-- Need RaftCLI to correctly parse the -p flag
-- Need a way to pass CMake options through to the dependency (Use this to supress JsonCPP tests)
-- Need a way to apply patches to a dependency (Patch SFML so it installs libs and extlibs in the right place)
-- Need to add Android project to the template game
++ Need RaftCLI to correctly parse the -p flag
++ Need a way to pass CMake options through to the dependency (Use this to supress JsonCPP tests)
++ Need a way to apply patches to a dependency (Patch SFML so it installs libs and extlibs in the right place)
++ Need to add Android project to the template game
+- Need to pull the STL into the installed directory.
+- Need to pull in SFML's external libraries.
 
 Android Problems
 - SFML overrides the install directory (Need to provide patch support or fork)

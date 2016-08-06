@@ -5,10 +5,10 @@ import BuildConfig = require('./BuildConfig')
 import CMake = require('./CMake')
 import Project = require('./Project')
 import Path = require('./Path')
-import RaftFile = require('./RaftFile')
 import VCS = require('./VCS')
 
 import raftlog = require('./Log')
+import {DependencyDescriptor} from './RaftFileDescriptor';
 
 /**
  * Interface used to interact with a build dependency.
@@ -51,7 +51,7 @@ export class RepositoryDependency implements Dependency {
      * @param  repo The repository the source can be downloaded from.
      * @param  patches Array of patches that will be applied to the dependency.
      */
-    constructor(public name : string, public repository : VCS.Repository, public patches : Path []) {
+    constructor(public descriptor : DependencyDescriptor, public repository : VCS.Repository, public patches : Path []) {
     }
 
     /**
@@ -75,6 +75,10 @@ export class RepositoryDependency implements Dependency {
      * @see Dependency.Dependency.buildInstall
      */
     buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> { return null };
+
+    get name () {
+        return this.descriptor.name;
+    }
 }
 
 /**
@@ -90,7 +94,8 @@ export class CMakeDependency extends RepositoryDependency {
         var installLocation = project.dirForDependencyInstall(build);
         var cmakeOptions = CMake.CMakeOptions
             .create(installLocation)
-            .platform(build.platform);
+            .platform(build.platform)
+            .configOptions(this.descriptor.configOptions);
 
         return CMake.configure(sourceLocation, buildLocation, cmakeOptions)
         .then(() => {

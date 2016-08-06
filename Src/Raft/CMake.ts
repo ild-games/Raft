@@ -4,6 +4,8 @@ import BuildConfig = require('./BuildConfig');
 import Path = require('./Path');
 import System = require('./System');
 
+import {Flag} from './RaftFileDescriptor';
+
 module CMake {
 
     export const FRAMEWORK_DIR = "framework";
@@ -73,8 +75,8 @@ module CMake {
 
         /**
          * Set the include path for the build.
-         * @param  {Path}         path Path that will be used to include header files.
-         * @return {CMakeOptions}      New CMakeOptions with the include directory modified.
+         * @param  path Path that will be used to include header files.
+         * @return New CMakeOptions with the include directory modified.
          */
         raftIncludeDir(path : Path) : CMakeOptions {
             return this.setPath(RAFT_INCLUDE_DIR, path);
@@ -82,8 +84,8 @@ module CMake {
 
         /**
          * Set the path to search for library files.
-         * @param  {Path}         path Path that will be used to include libraries.
-         * @return {CMakeOptions}      New CMakeOptions with the lib path modified.
+         * @param  path Path that will be used to include libraries.
+         * @return New CMakeOptions with the lib path modified.
          */
         raftLibDir(path : Path) : CMakeOptions {
             return this.setPath(RAFT_LIB_DIR, path)
@@ -91,8 +93,8 @@ module CMake {
 
         /**
          * Set the path that should be used to search for framework dependencies.
-         * @param  {Path}         path Path that should be used to find framework dependencies.
-         * @return {CMakeOptions}      New CMakeOptios with the framework dependencies set.
+         * @param  path Path that should be used to find framework dependencies.
+         * @return New CMakeOptios with the framework dependencies set.
          */
         raftFrameworkDir(path : Path) : CMakeOptions {
             return this.setPath(RAFT_FRAMEWORK_DIR, path);
@@ -100,8 +102,8 @@ module CMake {
 
         /**
          * Configure platform specific build flags.
-         * @param  {BuildConfig.Platform} platform Platform that is being built.
-         * @return {CMakeOptions}                  CMakeOptions with platform specific flags set.
+         * @param platform Platform that is being built.
+         * @return CMakeOptions with platform specific flags set.
          */
         platform(platform : BuildConfig.Platform) : CMakeOptions {
             var result = this.clone();
@@ -120,6 +122,18 @@ module CMake {
                     break;
                 default:
                     throw Error(`Unsupported platform: ${platform}`);
+            }
+            return result;
+        }
+
+        /**
+         * Set the configuration options passed in from the RaftFile configuration.
+         * @param flags Array of flags that were set in the RaftFile.
+         */
+        configOptions(flags : Flag [] = []) {
+            var result = this.clone();
+            for (var flag of flags) {
+                result.options[flag.name] = flag.value;
             }
             return result;
         }

@@ -20,8 +20,10 @@ export function createDependency(dependencyDescriptor : DependencyDescriptor, ra
     var buildSystem = dependencyDescriptor.buildSystem;
 
     var patches : Path [] = [];
-    if (dependencyDescriptor.patch) {
-        patches.push(raftDir.append(dependencyDescriptor.patch));
+    if (dependencyDescriptor.patches) {
+        for (let patch of dependencyDescriptor.patches) {
+            patches.push(raftDir.append(patch));
+        }
     }
 
     if (buildSystem === "cmake") {

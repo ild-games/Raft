@@ -98,8 +98,6 @@ class Path {
      */
     copyTo(path : Path) : Promise<any> {
         return new Promise((resolve, reject) => {
-            console.log(this);
-            console.log(path);
             var rd = fs.createReadStream(this.toString());
             rd.on('error', reject);
             var wr = fs.createWriteStream(path.toString());

@@ -20,22 +20,7 @@ import {beforeBuild} from './Hooks'
  * @return A promise that resolves once the build is finished.
  */
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
-
-    //TODO implement platform and architecture arguments
-    var buildSettings : BuildConfig.Build;
-    if (options.platform && options.platform.toUpperCase() === "ANDROID") {
-        buildSettings = {
-            isDeploy : false,
-            platform : BuildConfig.Platform.Android,
-            architecture : BuildConfig.Architecture.armeabi
-        }
-    } else {
-        buildSettings = {
-            isDeploy : false,
-            platform : BuildConfig.Platform.Host,
-            architecture : BuildConfig.Architecture.Host
-        }
-    }
+    var buildSettings = BuildConfig.parseBuildConfig(options.platform, options.architecture);
 
     return Project.find(Path.cwd()).then(function(project) {
         var dependencies = _.map(project.dependencies(), (dependency) => {

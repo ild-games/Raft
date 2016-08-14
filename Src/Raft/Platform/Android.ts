@@ -12,11 +12,8 @@ const STL_LIB_NAME = new Path("libc++_shared.so");
  * the stl into the libs directory.
  */
 export function androidBeforeBuild(project : Project, buildConfig : BuildConfig.Build) : Promise<any> {
-    console.log(project);
     var stlPath = getStlPath(buildConfig.architecture);
-    console.log(stlPath);
     var libPath = project.dirForDependencyLib(buildConfig)
-    console.log(libPath);
     return stlPath.copyTo(libPath.append(STL_LIB_NAME));
 }
 

@@ -18,7 +18,7 @@ export interface DependencyDescriptor {
      * Path to the a patch that should be applied to the dependency before it is build.
      * The path is evaluated relative to the RAFT directory.
      */
-    patch? : string,
+    patches : string[],
 
     /**
      * Options that are passed to the CMake configure process.

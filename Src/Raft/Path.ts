@@ -92,6 +92,22 @@ class Path {
     }
 
     /**
+     * Copy the file located at the path to the given path.
+     * @param  path Destination path.
+     * @return A promise that resolves when copy is complete.
+     */
+    copyTo(path : Path) : Promise<any> {
+        return new Promise((resolve, reject) => {
+            var rd = fs.createReadStream(this.toString());
+            rd.on('error', reject);
+            var wr = fs.createWriteStream(path.toString());
+            wr.on('error', reject);
+            wr.on('finish', resolve);
+            rd.pipe(wr);
+        });
+    }
+
+    /**
      * Open and read the file described by the path.
      * @return {Promise<string>} Resolves to the string contained within the file.
      */

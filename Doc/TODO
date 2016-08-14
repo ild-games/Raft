@@ -39,3 +39,6 @@ CMake
 - Create raft module and add it to CMAKE_PATH
 - Allow for linking Whole libraries
 - Support targeting Android build
+
+Android Build
+- Support multiple architectures.

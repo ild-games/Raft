@@ -4,9 +4,10 @@ import _ = require('underscore');
 import BuildConfig = require('./BuildConfig');
 import CMake = require('./CMake');
 import Path = require('./Path');
-import RaftFile = require('./RaftFile');
 
 import raftlog = require('./Log');
+
+import {DependencyDescriptor, RaftfileRoot} from './RaftFileDescriptor';
 
 /**
  * Describes a raft project. Contains project data, configuration, and project specific paths.
@@ -23,7 +24,7 @@ class Project {
     private static DEPENDENCY_INC_DIR = new Path('include');
     private static DEPENDENCY_FRAMEWORK_DIR = new Path(CMake.FRAMEWORK_DIR);
 
-    private raftfile : RaftFile.Root;
+    private raftfile : RaftfileRoot;
 
     constructor(root : Path) {
         this.root = root;
@@ -65,7 +66,7 @@ class Project {
      * Get the dependency descriptor's contained in the project's raftfile.
      * @return {RaftFile.DependencyDescriptor} The raw dependencies available in the raft file.
      */
-    dependencies() : RaftFile.DependencyDescriptor [] {
+    dependencies() : DependencyDescriptor [] {
         return this.raftfile.dependencies.slice(0);
     }
 
@@ -182,8 +183,12 @@ class Project {
 
     /**
      * Root directory of the project.
-     * @type {Path}
      */
     root : Path;
+
+    get raftDir() {
+        return this.root.append("Raft");
+    }
 }
+
 export = Project;

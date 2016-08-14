@@ -4,6 +4,8 @@ import BuildConfig = require('./BuildConfig');
 import Path = require('./Path');
 import System = require('./System');
 
+import {Flag} from './RaftFileDescriptor';
+
 module CMake {
 
     export const FRAMEWORK_DIR = "framework";
@@ -15,6 +17,12 @@ module CMake {
     //CMake Options
     const CMAKE_INSTALL_PREFIX = "CMAKE_INSTALL_PREFIX";
     const CMAKE_INSTALL_FRAMEWORK_PREFIX = "CMAKE_INSTALL_FRAMEWORK_PREFIX";
+    const CMAKE_TOOLCHAIN = "CMAKE_TOOLCHAIN_FILE";
+
+    //Android CMake Options
+    const ANDROID_ABI = "ANDROID_ABI";
+    const ANDROID_STL = "ANDROID_STL";
+    const ANDROID_NATIVE_API_LEVEL = "ANDROID_NATIVE_API_LEVEL";
 
     //Raft CMake Options
     const RAFT = "RAFT";
@@ -67,8 +75,8 @@ module CMake {
 
         /**
          * Set the include path for the build.
-         * @param  {Path}         path Path that will be used to include header files.
-         * @return {CMakeOptions}      New CMakeOptions with the include directory modified.
+         * @param  path Path that will be used to include header files.
+         * @return New CMakeOptions with the include directory modified.
          */
         raftIncludeDir(path : Path) : CMakeOptions {
             return this.setPath(RAFT_INCLUDE_DIR, path);
@@ -76,8 +84,8 @@ module CMake {
 
         /**
          * Set the path to search for library files.
-         * @param  {Path}         path Path that will be used to include libraries.
-         * @return {CMakeOptions}      New CMakeOptions with the lib path modified.
+         * @param  path Path that will be used to include libraries.
+         * @return New CMakeOptions with the lib path modified.
          */
         raftLibDir(path : Path) : CMakeOptions {
             return this.setPath(RAFT_LIB_DIR, path)
@@ -85,8 +93,8 @@ module CMake {
 
         /**
          * Set the path that should be used to search for framework dependencies.
-         * @param  {Path}         path Path that should be used to find framework dependencies.
-         * @return {CMakeOptions}      New CMakeOptios with the framework dependencies set.
+         * @param  path Path that should be used to find framework dependencies.
+         * @return New CMakeOptios with the framework dependencies set.
          */
         raftFrameworkDir(path : Path) : CMakeOptions {
             return this.setPath(RAFT_FRAMEWORK_DIR, path);
@@ -94,8 +102,8 @@ module CMake {
 
         /**
          * Configure platform specific build flags.
-         * @param  {BuildConfig.Platform} platform Platform that is being built.
-         * @return {CMakeOptions}                  CMakeOptions with platform specific flags set.
+         * @param platform Platform that is being built.
+         * @return CMakeOptions with platform specific flags set.
          */
         platform(platform : BuildConfig.Platform) : CMakeOptions {
             var result = this.clone();
@@ -104,8 +112,28 @@ module CMake {
                     result.options[RAFT_IS_DESKTOP] = CMAKE_TRUE;
                     result.options[RAFT_IS_ANDROID] = CMAKE_FALSE;
                     break;
+                case BuildConfig.Platform.Android:
+                    result.options[RAFT_IS_DESKTOP] = CMAKE_FALSE;
+                    result.options[RAFT_IS_ANDROID] = CMAKE_TRUE;
+                    result.options[ANDROID_ABI] = "armeabi"; //TODO support more architectures
+                    result.options[ANDROID_STL] = "c++_shared"; //TODO ues clang
+                    result.options[ANDROID_NATIVE_API_LEVEL] = "android-9";
+                    result.options[CMAKE_TOOLCHAIN] = raftAndroidToolchainFile().toString();
+                    break;
                 default:
                     throw Error(`Unsupported platform: ${platform}`);
+            }
+            return result;
+        }
+
+        /**
+         * Set the configuration options passed in from the RaftFile configuration.
+         * @param flags Array of flags that were set in the RaftFile.
+         */
+        configOptions(flags : Flag [] = []) {
+            var result = this.clone();
+            for (var flag of flags) {
+                result.options[flag.name] = flag.value;
             }
             return result;
         }
@@ -170,6 +198,14 @@ module CMake {
      */
     export function raftCmakeFile() {
         return raftCMakeDir().append("Raft.cmake");
+    }
+
+    /**
+     * Get the path to the Android Toolchain file.
+     * @return {Path} Path to the Android toolchain file.
+     */
+    export function raftAndroidToolchainFile() {
+        return raftCMakeDir().append("Toolchains","Android","android.toolchain.cmake");
     }
 }
 

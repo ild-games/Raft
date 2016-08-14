@@ -116,9 +116,10 @@ module CMake {
                     result.options[RAFT_IS_DESKTOP] = CMAKE_FALSE;
                     result.options[RAFT_IS_ANDROID] = CMAKE_TRUE;
                     result.options[ANDROID_ABI] = "armeabi"; //TODO support more architectures
-                    result.options[ANDROID_STL] = "gnustl_shared"; //TODO ues clang
-                    result.options[ANDROID_NATIVE_API_LEVEL] = "android-18";
+                    result.options[ANDROID_STL] = "c++_shared"; //TODO ues clang
+                    result.options[ANDROID_NATIVE_API_LEVEL] = "android-9";
                     result.options[CMAKE_TOOLCHAIN] = raftAndroidToolchainFile().toString();
+                    result.options["ANDROID_TOOLCHAIN_NAME"]="arm-linux-androideabi-clang";
                     break;
                 default:
                     throw Error(`Unsupported platform: ${platform}`);
@@ -205,7 +206,7 @@ module CMake {
      * @return {Path} Path to the Android toolchain file.
      */
     export function raftAndroidToolchainFile() {
-        return raftCMakeDir().append("Toolchains", "android.toolchain.cmake");
+        return raftCMakeDir().append("Toolchains","Android","android.toolchain.cmake");
     }
 }
 

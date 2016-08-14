@@ -4,7 +4,8 @@ import BuildConfig = require('../BuildConfig');
 import Project = require('../Project');
 import Path = require('../Path');
 
-const STL_LIB_NAME = new Path("libgnustl_shared.so");
+const STL_DIR_NAME = new Path("llvm-libc++");
+const STL_LIB_NAME = new Path("libc++_shared.so");
 
 /**
  * Hook executed before the project is built. Android uses this hook to install
@@ -33,8 +34,7 @@ export function getStlPath(architecture: BuildConfig.Architecture) : Path {
     return findNDK().append(
         "sources",
         "cxx-stl",
-        "gnu-libstdc++",
-        "4.9",
+        STL_DIR_NAME,
         "libs",
         BuildConfig.Architecture[architecture],
         STL_LIB_NAME

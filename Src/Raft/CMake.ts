@@ -119,7 +119,6 @@ module CMake {
                     result.options[ANDROID_STL] = "c++_shared"; //TODO ues clang
                     result.options[ANDROID_NATIVE_API_LEVEL] = "android-9";
                     result.options[CMAKE_TOOLCHAIN] = raftAndroidToolchainFile().toString();
-                    result.options["ANDROID_TOOLCHAIN_NAME"]="arm-linux-androideabi-clang";
                     break;
                 default:
                     throw Error(`Unsupported platform: ${platform}`);

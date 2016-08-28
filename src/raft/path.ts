@@ -1,14 +1,14 @@
-import fs = require('fs');
-import npath = require('path');
-import mkdirp = require('mkdirp');
-import _ = require('underscore');
-import Promise = require('bluebird')
-import os = require('os');
+import * as fs from 'fs';
+import * as npath from 'path';
+import * as mkdirp from 'mkdirp';
+import * as _ from 'underscore';
+import * as Promise from 'bluebird';
+import * as os from 'os';
 
 /**
  * A class that is used to interact with paths. Instances of the path class are immutable.
  */
-class Path {
+export class Path {
     private path : string;
     /**
      * Construct a new path.
@@ -146,4 +146,3 @@ class Path {
     }
 
 }
-export = Path;

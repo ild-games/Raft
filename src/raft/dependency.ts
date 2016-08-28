@@ -1,14 +1,13 @@
-import Promise = require('bluebird');
-import _ = require('underscore');
+import * as Promise from 'bluebird';
+import * as _ from 'underscore';
 
-import BuildConfig = require('./BuildConfig')
-import CMake = require('./CMake')
-import Project = require('./Project')
-import Path = require('./Path')
-import VCS = require('./VCS')
-
-import raftlog = require('./Log')
-import {DependencyDescriptor} from './RaftFileDescriptor';
+import * as CMake from './cmake';
+import {raftlog} from './log';
+import {DependencyDescriptor} from './raft-file-descriptor';
+import {Build} from './build-config';
+import {Path} from './path';
+import {Project} from './project';
+import {Repository} from './VCS';
 
 /**
  * Interface used to interact with a build dependency.
@@ -30,7 +29,7 @@ export interface Dependency {
      * @param  build   Configuration for the current build.
      * @return A promise that resolves once the download is finished.
      */
-    download(project : Project, build : BuildConfig.Build) : Promise<any>;
+    download(project : Project, build : Build) : Promise<any>;
 
     /**
      * Build the dependency and install it so that it is accessible to other dependencies
@@ -39,7 +38,7 @@ export interface Dependency {
      * @param build   Configuration for the current build.
      * @return A promise that resolves once the project is built and installed.
      */
-    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any>;
+    buildInstall(project : Project, build : Build) : Promise<any>;
 }
 
 /**
@@ -51,13 +50,13 @@ export class RepositoryDependency implements Dependency {
      * @param  repo The repository the source can be downloaded from.
      * @param  patches Array of patches that will be applied to the dependency.
      */
-    constructor(public descriptor : DependencyDescriptor, public repository : VCS.Repository, public patches : Path []) {
+    constructor(public descriptor : DependencyDescriptor, public repository : Repository, public patches : Path []) {
     }
 
     /**
      * @see Dependency.Dependency.download
      */
-    download(project : Project, build : BuildConfig.Build) : Promise<any> {
+    download(project : Project, build : Build) : Promise<any> {
 
         var dependencyDir = project.dirForDependency(this.name);
 
@@ -74,7 +73,7 @@ export class RepositoryDependency implements Dependency {
     /**
      * @see Dependency.Dependency.buildInstall
      */
-    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> { return null };
+    buildInstall(project : Project, build : Build) : Promise<any> { return null };
 
     get name () {
         return this.descriptor.name;
@@ -88,7 +87,7 @@ export class CMakeDependency extends RepositoryDependency {
     /**
      * @see Dependency.Dependency.buildInstall
      */
-    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> {
+    buildInstall(project : Project, build : Build) : Promise<any> {
         var sourceLocation = project.dirForDependency(this.name);
         var buildLocation = project.dirForDependencyBuild(this.name, build);
         var installLocation = project.dirForDependencyInstall(build);
@@ -113,7 +112,7 @@ export class CMakeDependency extends RepositoryDependency {
  * @param  dependency The dependency that is being built.
  * @return A promise that resolves once the dependency is ready for use.
  */
-export function getDependency(project : Project, build : BuildConfig.Build, dependency : Dependency) {
+export function getDependency(project : Project, build : Build, dependency : Dependency) {
     raftlog(dependency.name, "Downloading");
     return dependency.download(project, build)
     .then(() => {

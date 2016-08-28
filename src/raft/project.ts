@@ -1,18 +1,16 @@
-import Promise = require('bluebird');
-import _ = require('underscore');
+import * as Promise from 'bluebird';
+import * as _ from 'underscore';
 
-import BuildConfig = require('./BuildConfig');
-import CMake = require('./CMake');
-import Path = require('./Path');
-
-import raftlog = require('./Log');
-
-import {DependencyDescriptor, RaftfileRoot} from './RaftFileDescriptor';
+import * as CMake from './cmake';
+import {DependencyDescriptor, RaftfileRoot} from './raft-file-descriptor';
+import {Build, Platform, Architecture} from './build-config';
+import {raftlog} from './log';
+import {Path} from './path';
 
 /**
  * Describes a raft project. Contains project data, configuration, and project specific paths.
  */
-class Project {
+export class Project {
     private static RAFT_DIR = new Path('Raft');
     private static RAFT_FILE = Project.RAFT_DIR.append('raftfile.json');
     private static BUILD_DIR = new Path('build');
@@ -82,62 +80,62 @@ class Project {
     /**
      * Get the folder where the dependency should be built.
      * @param  {string}            name  Name of the dependency.
-     * @param  {BuildConfig.Build} build The configuration for the current build.
+     * @param  {Build} build The configuration for the current build.
      * @return {Path}                    Path describing where the dependency should be built.
      */
-    dirForDependencyBuild(name : string, build : BuildConfig.Build) {
+    dirForDependencyBuild(name : string, build : Build) {
         return this.root.append(
             Project.DEPENDENCY_BUILD_DIR,
-            BuildConfig.Platform[build.platform],
-            BuildConfig.Architecture[build.architecture],
+            Platform[build.platform],
+            Architecture[build.architecture],
             name);
     }
 
     /**
      * Get the folder where the dependencies should be installed.
-     * @param  {BuildConfig.Build} build The configuration for the current build.
+     * @param  {Build} build The configuration for the current build.
      * @return {Path}                  Path describing where dependencies should be installed.
      */
-    dirForDependencyInstall(build :BuildConfig.Build) {
+    dirForDependencyInstall(build :Build) {
         return this.root.append(
             Project.DEPENDENCY_INSTALL_DIR,
-            BuildConfig.Platform[build.platform],
-            BuildConfig.Architecture[build.architecture]);
+            Platform[build.platform],
+            Architecture[build.architecture]);
     }
 
     /**
      * Get the folder where the dependencies library binaries should be installed.
-     * @param  {BuildConfig.Build} build The configuration for the current build.
+     * @param  {Build} build The configuration for the current build.
      * @return {Path}                  Path describing where the library binaries should be installed.
      */
-    dirForDependencyLib(build : BuildConfig.Build) {
+    dirForDependencyLib(build : Build) {
         return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_LIB_DIR);
     }
 
     /**
      * Get the folder where the dependency headers should be installed.
-     * @param  {BuildConfig.Build} build The configuration for the current build.
+     * @param  {Build} build The configuration for the current build.
      * @return {Path}                  Path describing where the dependency headers should be installed.
      */
-    dirForDependencyInc(build : BuildConfig.Build) {
+    dirForDependencyInc(build : Build) {
         return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_INC_DIR);
     }
 
     /**
      * Get the folder where the dependency frameworks should be installed.
-     * @param  {BuildConfig.Build} build The configuration for the current build.
+     * @param  {Build} build The configuration for the current build.
      * @return {[type]}                  Path describing where the framework headers should be installed.
      */
-    dirForDependencyFramework(build : BuildConfig.Build) {
+    dirForDependencyFramework(build : Build) {
         return this.dirForDependencyInstall(build).append(Project.DEPENDENCY_FRAMEWORK_DIR);
     }
 
     /**
      * Get the directory the project should be built in.
-     * @param  {BuildConfig.Build} build The current build configuration.
+     * @param  {Build} build The current build configuration.
      * @return {Path}                    The directory the project should be built in.
      */
-    dirForBuild(build : BuildConfig.Build) {
+    dirForBuild(build : Build) {
         if (build.isDeploy) {
             throw Error("deploy has not been implemented");
         } else {
@@ -147,10 +145,10 @@ class Project {
 
     /**
      * Build the project.
-     * @param  {BuildConfig.Build} build The current build configuration.
+     * @param  {Build} build The current build configuration.
      * @return {Promise<any>}            A promise that resolves when the build is finished.
      */
-    build(build : BuildConfig.Build) : Promise<any> {
+    build(build : Build) : Promise<any> {
         var buildPath = this.dirForBuild(build);
         var cmakeOptions = this.cmakeOptions(this, build)
         return CMake.configure(this.root, buildPath, cmakeOptions)
@@ -162,10 +160,10 @@ class Project {
     /**
      * Get the cmake options that should be used when building the project.
      * @param  {Project}           rootProject Root raft project for the current build.
-     * @param  {BuildConfig.Build} build       Configuration for the current build.
+     * @param  {Build} build       Configuration for the current build.
      * @return {object}                        CMake options that should be used for the build.
      */
-    cmakeOptions(rootProject : Project, build : BuildConfig.Build) : CMake.CMakeOptions {
+    cmakeOptions(rootProject : Project, build : Build) : CMake.CMakeOptions {
         var installPath : Path;
         if (this === rootProject) {
             installPath = this.root.append("install");
@@ -190,5 +188,3 @@ class Project {
         return this.root.append("Raft");
     }
 }
-
-export = Project;

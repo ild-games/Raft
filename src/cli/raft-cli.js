@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var Raft = require("Raft");
+var Raft = require("raft");
 
 var yargs = require('yargs');
 var argv = yargs

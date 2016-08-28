@@ -1,9 +1,9 @@
-import child_process = require('child_process');
-import _ = require('underscore');
-import Promise = require('bluebird');
+import * as child_process from 'child_process';
+import * as _ from 'underscore';
+import * as Promise from 'bluebird';
 
-import Path = require('./Path');
-import raftlog = require('./Log');
+import {Path} from './path';
+import {raftlog} from './log';
 
 /**
  * Object containing the output of a child process.

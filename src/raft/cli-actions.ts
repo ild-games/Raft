@@ -1,18 +1,18 @@
-import _ = require('underscore');
-import Promise = require('bluebird');
-import Promptly = require('promptly');
-import colors = require('colors');
 
-import BuildConfig = require('./BuildConfig');
-import Dependency = require('./Dependency');
-import Path = require('./Path');
-import Project = require('./Project');
-import Template = require('./Template');
-import VCS = require('./VCS');
-import raftlog = require('./Log');
+import * as _ from 'underscore';
+import * as Promise from 'bluebird';
+import * as Promptly from 'promptly';
+import * as colors from 'colors';
 
-import {createDependency} from './RaftFileParser';
-import {beforeBuild} from './Hooks'
+import {parseBuildConfig} from './build-config';
+import {getDependency} from './dependency';
+import {beforeBuild} from './hooks'
+import {raftlog} from './log';
+import {Path} from './path';
+import {Project} from './project';
+import {instantiateTemplate} from './template';
+import {createDependency} from './raft-file-parser';
+
 
 /**
  * Build the raft project the user is currently in.
@@ -20,7 +20,8 @@ import {beforeBuild} from './Hooks'
  * @return A promise that resolves once the build is finished.
  */
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
-    var buildSettings = BuildConfig.parseBuildConfig(options.platform, options.architecture);
+
+    var buildSettings = parseBuildConfig(options.platform, options.architecture);
 
     return Project.find(Path.cwd()).then(function(project) {
         var dependencies = _.map(project.dependencies(), (dependency) => {
@@ -31,7 +32,7 @@ export function build(options : {platform? : string, architecture? : string} = {
 
         return Promise.map(
             dependencies,
-            (dependency) => Dependency.getDependency(project, buildSettings, dependency))
+            (dependency) => getDependency(project, buildSettings, dependency))
         .then(() => beforeBuild(project, buildSettings))
         .then(() => project.build(buildSettings));
     });
@@ -58,7 +59,7 @@ export function create(templateType : string) : Promise<any> {
         errorMessage: errorMessage
     };
     return templateSetup(templateArgs).then((context : any) => {
-        return Template.instantiateTemplate(templateDir, Path.cwd(), context);
+        return instantiateTemplate(templateDir, Path.cwd(), context);
     });
 };
 

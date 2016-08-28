@@ -6,9 +6,9 @@ var rename = require('gulp-rename');
 var chmod = require('gulp-chmod');
 var watch = require('gulp-watch');
 
-var LIB_FILES = "Src/Raft/**/*.ts"
-var CLI_FILES = "Src/CLI/RaftCLI.js"
-var TYPINGS = "TSD/typings.d.ts"
+var LIB_FILES = "src/raft/**/*.ts"
+var CLI_FILES = "src/cli/raft-cli.js"
+var TYPINGS = "tsd/typings.d.ts"
 
 function compileTS(override) {
     var project = {
@@ -30,7 +30,7 @@ gulp.task('lib', function() {
         .src([LIB_FILES, TYPINGS])
         .pipe(compileTS())
         .js
-        .pipe(gulp.dest('release/lib/Raft/'));
+        .pipe(gulp.dest('release/lib/raft/'));
 });
 
 gulp.task('bin', function() {

@@ -1,5 +1,5 @@
-import System = require('./System')
-import Path = require('./Path')
+import System = require('./system')
+import Path = require('./path')
 import Promise = require('bluebird')
 
 /**

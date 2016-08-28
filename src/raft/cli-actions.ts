@@ -3,15 +3,15 @@ import Promise = require('bluebird');
 import Promptly = require('promptly');
 import colors = require('colors');
 
-import Dependency = require('./Dependency');
-import Path = require('./Path');
-import Project = require('./Project');
-import Template = require('./Template');
-import VCS = require('./VCS');
-import raftlog = require('./Log');
+import Dependency = require('./dependency');
+import Path = require('./path');
+import Project = require('./project');
+import Template = require('./template');
+import VCS = require('./vcs');
+import raftlog = require('./log');
 
-import {createDependency} from './RaftFileParser';
-import {beforeBuild} from './Hooks'
+import {createDependency} from './raft-file-parser';
+import {beforeBuild} from './hooks'
 
 import {parseBuildConfig} from './build-config';
 

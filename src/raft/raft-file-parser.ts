@@ -1,12 +1,12 @@
 import Promise = require('bluebird');
 import _ = require('underscore');
 
-import CMake = require('./CMake');
-import Dependency = require('./Dependency');
-import Path = require('./Path');
-import Project = require('./Project')
-import VCS = require('./VCS');
-import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './RaftFileDescriptor';
+import CMake = require('./cmake');
+import Dependency = require('./dependency');
+import Path = require('./path');
+import Project = require('./project')
+import VCS = require('./vcs');
+import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './raft-file-descriptor';
 
 import {Build} from './build-config';
 

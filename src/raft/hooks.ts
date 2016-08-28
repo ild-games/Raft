@@ -4,9 +4,9 @@
  * scripts and as a way to handle platform specific quirks.
  */
  
-import Project = require('./Project');
+import Project = require('./project');
 
-import {androidBeforeBuild} from './Platform/Android';
+import {androidBeforeBuild} from './platform/android';
 import {Build, Platform} from './build-config';
 
 /**

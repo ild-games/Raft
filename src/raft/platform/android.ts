@@ -1,7 +1,7 @@
 import Promise = require('bluebird');
 
-import Project = require('../Project');
-import Path = require('../Path');
+import Project = require('../project');
+import Path = require('../path');
 
 const STL_DIR_NAME = new Path("llvm-libc++");
 const STL_LIB_NAME = new Path("libc++_shared.so");

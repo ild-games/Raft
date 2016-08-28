@@ -15,8 +15,8 @@
         "suppressImplicitAnyIndexErrors": true
     },
     "filesGlob": [
-        "Src/**/*.ts",
-        "TSD/typings.d.ts"
+        "src/**/*.ts",
+        "tsd/typings.d.ts"
     ],
     "compileOnSave": false,
     "buildOnSave": false,

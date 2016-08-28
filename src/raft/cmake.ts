@@ -1,9 +1,9 @@
 import _ = require('underscore');
 
-import Path = require('./Path');
-import System = require('./System');
+import Path = require('./path');
+import System = require('./system');
 
-import {Flag} from './RaftFileDescriptor';
+import {Flag} from './raft-file-descriptor';
 import {Platform} from './build-config';
 
 module CMake {
@@ -184,7 +184,7 @@ module CMake {
      * @return {Path} Path the cmake files are stored in.
      */
     export function raftCMakeDir() : Path {
-        return (new Path(__dirname)).parent().parent().parent().append('CMake');
+        return (new Path(__dirname)).parent().parent().parent().append('cmake');
     }
 
     /**
@@ -197,7 +197,7 @@ module CMake {
      * @return {Path} Path to the raft cmake file.
      */
     export function raftCmakeFile() {
-        return raftCMakeDir().append("Raft.cmake");
+        return raftCMakeDir().append("raft.cmake");
     }
 
     /**
@@ -205,7 +205,7 @@ module CMake {
      * @return {Path} Path to the Android toolchain file.
      */
     export function raftAndroidToolchainFile() {
-        return raftCMakeDir().append("Toolchains","Android","android.toolchain.cmake");
+        return raftCMakeDir().append("toolchains","android","android.toolchain.cmake");
     }
 }
 

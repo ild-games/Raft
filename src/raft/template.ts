@@ -5,8 +5,8 @@ import rename = require('gulp-rename');
 import Promise = require('bluebird');
 import rimraf = require('rimraf');
 
-import Path = require('./Path');
-import VCS = require('./VCS');
+import Path = require('./path');
+import VCS = require('./vcs');
 
 module Template {
     interface ParsedPath {

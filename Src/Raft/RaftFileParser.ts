@@ -1,13 +1,14 @@
 import Promise = require('bluebird');
 import _ = require('underscore');
 
-import BuildConfig = require('./BuildConfig');
 import CMake = require('./CMake');
 import Dependency = require('./Dependency');
 import Path = require('./Path');
 import Project = require('./Project')
 import VCS = require('./VCS');
 import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './RaftFileDescriptor';
+
+import {Build} from './build-config';
 
 
 /**
@@ -57,7 +58,7 @@ export class RaftDependency extends Dependency.RepositoryDependency {
     /**
      * @see Dependency.Dependency.download
      */
-    download(project : Project, build : BuildConfig.Build) : Promise<any> {
+    download(project : Project, build : Build) : Promise<any> {
         var buildLocation = project.dirForDependency(this.name);
         return super.download(project, build)
         .then(() => Project.find(buildLocation))
@@ -79,7 +80,7 @@ export class RaftDependency extends Dependency.RepositoryDependency {
     /**
      * @see Dependency.Dependency.buildInstall
      */
-    buildInstall(project : Project, build : BuildConfig.Build) : Promise<any> {
+    buildInstall(project : Project, build : Build) : Promise<any> {
         var buildPath = project.dirForDependencyBuild(this.name, build);
         var dependencies = _.map(this.project.dependencies(), (dependency) => createDependency(dependency, this.project.raftDir));
 

@@ -1,10 +1,10 @@
 import _ = require('underscore');
 
-import BuildConfig = require('./BuildConfig');
 import Path = require('./Path');
 import System = require('./System');
 
 import {Flag} from './RaftFileDescriptor';
+import {Platform} from './build-config';
 
 module CMake {
 
@@ -105,14 +105,14 @@ module CMake {
          * @param platform Platform that is being built.
          * @return CMakeOptions with platform specific flags set.
          */
-        platform(platform : BuildConfig.Platform) : CMakeOptions {
+        platform(platform : Platform) : CMakeOptions {
             var result = this.clone();
             switch (platform) {
-                case BuildConfig.Platform.Host:
+                case Platform.Host:
                     result.options[RAFT_IS_DESKTOP] = CMAKE_TRUE;
                     result.options[RAFT_IS_ANDROID] = CMAKE_FALSE;
                     break;
-                case BuildConfig.Platform.Android:
+                case Platform.Android:
                     result.options[RAFT_IS_DESKTOP] = CMAKE_FALSE;
                     result.options[RAFT_IS_ANDROID] = CMAKE_TRUE;
                     result.options[ANDROID_ABI] = "armeabi"; //TODO support more architectures

@@ -3,7 +3,6 @@ import Promise = require('bluebird');
 import Promptly = require('promptly');
 import colors = require('colors');
 
-import BuildConfig = require('./BuildConfig');
 import Dependency = require('./Dependency');
 import Path = require('./Path');
 import Project = require('./Project');
@@ -14,13 +13,16 @@ import raftlog = require('./Log');
 import {createDependency} from './RaftFileParser';
 import {beforeBuild} from './Hooks'
 
+import {parseBuildConfig} from './build-config';
+
 /**
  * Build the raft project the user is currently in.
  * @param  options Can be used to specify the parameters for the build configuration.
  * @return A promise that resolves once the build is finished.
  */
 export function build(options : {platform? : string, architecture? : string} = {}) : Promise<any> {
-    var buildSettings = BuildConfig.parseBuildConfig(options.platform, options.architecture);
+
+    var buildSettings = parseBuildConfig(options.platform, options.architecture);
 
     return Project.find(Path.cwd()).then(function(project) {
         var dependencies = _.map(project.dependencies(), (dependency) => {

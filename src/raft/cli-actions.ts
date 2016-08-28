@@ -4,8 +4,6 @@ import * as Promise from 'bluebird';
 import * as Promptly from 'promptly';
 import * as colors from 'colors';
 
-import Template = require('./template');
-
 import {parseBuildConfig} from './build-config';
 import {getDependency} from './dependency';
 import {beforeBuild} from './hooks'
@@ -61,7 +59,7 @@ export function create(templateType : string) : Promise<any> {
         errorMessage: errorMessage
     };
     return templateSetup(templateArgs).then((context : any) => {
-        return Template.instantiateTemplate(templateDir, Path.cwd(), context);
+        return instantiateTemplate(templateDir, Path.cwd(), context);
     });
 };
 

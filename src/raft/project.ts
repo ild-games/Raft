@@ -80,7 +80,7 @@ export class Project {
     /**
      * Get the folder where the dependency should be built.
      * @param  {string}            name  Name of the dependency.
-     * @param  {.Build} build The configuration for the current build.
+     * @param  {Build} build The configuration for the current build.
      * @return {Path}                    Path describing where the dependency should be built.
      */
     dirForDependencyBuild(name : string, build : Build) {

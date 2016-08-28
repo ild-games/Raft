@@ -1,14 +1,13 @@
-import Promise = require('bluebird');
-import _ = require('underscore');
-
-import CMake = require('./cmake');
-import Dependency = require('./dependency');
-import Path = require('./path');
-import Project = require('./project')
-import VCS = require('./vcs');
-import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './raft-file-descriptor';
+import * as Promise from 'bluebird';
+import * as _ from 'underscore';
 
 import {Build} from './build-config';
+import * as CMake from './cmake';
+import {Path} from './path';
+import {Project} from './project';
+import {RepositoryDependency, CMakeDependency} from './dependency';
+import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './raft-file-descriptor';
+import {Repository, GitRepository} from './vcs';
 
 
 /**
@@ -28,7 +27,7 @@ export function createDependency(dependencyDescriptor : DependencyDescriptor, ra
     }
 
     if (buildSystem === "cmake") {
-        return new Dependency.CMakeDependency(dependencyDescriptor, repo, patches);
+        return new CMakeDependency(dependencyDescriptor, repo, patches);
     } else if (buildSystem === "raft") {
         return new RaftDependency(dependencyDescriptor, repo, patches);
     } else {
@@ -39,11 +38,11 @@ export function createDependency(dependencyDescriptor : DependencyDescriptor, ra
 /**
  * Create a Repostitory object given a descriptor from a raftfile.
  * @param  {RaftFile.RepositoryDescriptor} repoDescriptor The descriptor loaded from a raftfile.
- * @return {VCS.Repository}                               An object that can be used to interact with the repository.
+ * @return {Repository}                               An object that can be used to interact with the repository.
  */
-export function createRepository(repoDescriptor : RepositoryDescriptor) : VCS.Repository {
+export function createRepository(repoDescriptor : RepositoryDescriptor) : Repository {
     if (repoDescriptor.type) {
-        return new VCS.GitRepository(repoDescriptor.location, repoDescriptor.branch);
+        return new GitRepository(repoDescriptor.location, repoDescriptor.branch);
     } else {
         throw Error("Unknown repository type");
     }
@@ -52,11 +51,11 @@ export function createRepository(repoDescriptor : RepositoryDescriptor) : VCS.Re
 /**
  * A dependency that uses Raft for managing its own dependencies.
  */
-export class RaftDependency extends Dependency.RepositoryDependency {
+export class RaftDependency extends RepositoryDependency {
     private project : Project;
 
     /**
-     * @see Dependency.Dependency.download
+     * @see Dependency.download
      */
     download(project : Project, build : Build) : Promise<any> {
         var buildLocation = project.dirForDependency(this.name);
@@ -78,7 +77,7 @@ export class RaftDependency extends Dependency.RepositoryDependency {
     }
 
     /**
-     * @see Dependency.Dependency.buildInstall
+     * @see Dependency.buildInstall
      */
     buildInstall(project : Project, build : Build) : Promise<any> {
         var buildPath = project.dirForDependencyBuild(this.name, build);

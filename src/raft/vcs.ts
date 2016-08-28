@@ -1,6 +1,7 @@
-import System = require('./system')
-import Path = require('./path')
-import Promise = require('bluebird')
+import * as Promise from 'bluebird';
+
+import {execute, ProcessOutput} from './system';
+import {Path} from './path';
 
 /**
 * An interface that describes how clients can interact with repository.
@@ -42,7 +43,7 @@ export class GitRepository implements Repository {
     /**
     * @see VCS.Repository.download
     */
-    download(destination : Path) {
+    download(destination : Path) : Promise<ProcessOutput> {
         return getGitRepo(this.uri, destination)
         .then(() => {
             if (this.branch) {
@@ -56,7 +57,7 @@ export class GitRepository implements Repository {
     */
      patch(repoDirectory : Path, patch : Path) {
          if (repoDirectory.exists() && patch.exists()) {
-             return System.execute('git', ['apply', patch.toString()], {cwd : repoDirectory});
+             return execute('git', ['apply', patch.toString()], {cwd : repoDirectory});
          }
          return Promise.reject({});
      }
@@ -64,11 +65,11 @@ export class GitRepository implements Repository {
 
 function getGitRepo(uri : string, destination : Path) : Promise<any> {
     if (!destination.exists()) {
-        return System.execute(`git`, [`clone`, uri, destination.toString()]);
+        return execute(`git`, [`clone`, uri, destination.toString()]);
     }
     return Promise.resolve();
 }
 
 function checkoutBranch(repo : Path, branchName : string) {
-    return System.execute(`git`, [`checkout`, branchName], { cwd : repo});
+    return execute(`git`, [`checkout`, branchName], { cwd : repo});
 }

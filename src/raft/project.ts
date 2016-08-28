@@ -1,18 +1,16 @@
-import Promise = require('bluebird');
-import _ = require('underscore');
+import * as Promise from 'bluebird';
+import * as _ from 'underscore';
 
-import CMake = require('./cmake');
-import Path = require('./path');
-
-import raftlog = require('./log');
-
+import * as CMake from './cmake';
 import {DependencyDescriptor, RaftfileRoot} from './raft-file-descriptor';
 import {Build, Platform, Architecture} from './build-config';
+import {raftlog} from './log';
+import {Path} from './path';
 
 /**
  * Describes a raft project. Contains project data, configuration, and project specific paths.
  */
-class Project {
+export class Project {
     private static RAFT_DIR = new Path('Raft');
     private static RAFT_FILE = Project.RAFT_DIR.append('raftfile.json');
     private static BUILD_DIR = new Path('build');
@@ -190,5 +188,3 @@ class Project {
         return this.root.append("Raft");
     }
 }
-
-export = Project;

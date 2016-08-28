@@ -1,12 +1,11 @@
-import Promise = require('bluebird');
+import * as Promise from 'bluebird';
 
-import Project = require('../project');
-import Path = require('../path');
+import {Build, Architecture} from '../build-config';
+import {Project} from '../project';
+import {Path} from '../path';
 
 const STL_DIR_NAME = new Path("llvm-libc++");
 const STL_LIB_NAME = new Path("libc++_shared.so");
-
-import {Build, Architecture} from '../build-config';
 
 /**
  * Hook executed before the project is built. Android uses this hook to install

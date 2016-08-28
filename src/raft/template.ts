@@ -1,12 +1,14 @@
-import gulp = require('gulp');
-import gulpif = require('gulp-if');
+//Typings files don't support ES6 style import
 import mustache = require('gulp-mustache');
 import rename = require('gulp-rename');
-import Promise = require('bluebird');
-import rimraf = require('rimraf');
 
-import Path = require('./path');
-import VCS = require('./vcs');
+import * as gulp from 'gulp';
+import * as gulpif from 'gulp-if';
+import * as Promise from 'bluebird';
+import * as rimraf from 'rimraf';
+
+import {Path} from './path';
+import {Repository} from './vcs';
 
 module Template {
     interface ParsedPath {
@@ -37,12 +39,12 @@ module Template {
 
     /**
      * Use the repository to instantiate a template in the given location.
-     * @param  {VCS.Repository} repo         The repository the template is located in.
-     * @param  {Path}           destination  The directory that will be instantiated using the template.
-     * @param  {any}            context      Values in the context will be available in the templates.
-     * @return {Promise<any>}                The promise will resolve after the template is instantiated.
+     * @param  repo         The repository the template is located in.
+     * @param  destination  The directory that will be instantiated using the template.
+     * @param  context      Values in the context will be available in the templates.
+     * @return The promise will resolve after the template is instantiated.
      */
-    export function instantiateRepositoryTemplate(repo : VCS.Repository, destination : Path, context : any) {
+    export function instantiateRepositoryTemplate(repo : Repository, destination : Path, context : any) {
         var repoLocation = destination.append(".template");
         return repo.download(repoLocation)
         .then(() => {

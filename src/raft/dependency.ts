@@ -1,14 +1,13 @@
-import Promise = require('bluebird');
-import _ = require('underscore');
+import * as Promise from 'bluebird';
+import * as _ from 'underscore';
 
-import CMake = require('./cmake')
-import Project = require('./project')
-import Path = require('./path')
-import VCS = require('./vcs')
-
-import raftlog = require('./log')
+import * as CMake from './cmake';
+import {raftlog} from './log';
 import {DependencyDescriptor} from './raft-file-descriptor';
 import {Build} from './build-config';
+import {Path} from './path';
+import {Project} from './project';
+import {Repository} from './VCS';
 
 /**
  * Interface used to interact with a build dependency.
@@ -51,7 +50,7 @@ export class RepositoryDependency implements Dependency {
      * @param  repo The repository the source can be downloaded from.
      * @param  patches Array of patches that will be applied to the dependency.
      */
-    constructor(public descriptor : DependencyDescriptor, public repository : VCS.Repository, public patches : Path []) {
+    constructor(public descriptor : DependencyDescriptor, public repository : Repository, public patches : Path []) {
     }
 
     /**

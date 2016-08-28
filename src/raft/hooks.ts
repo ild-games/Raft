@@ -3,11 +3,10 @@
  * different parts of the build process. The hooks will be used for project specific
  * scripts and as a way to handle platform specific quirks.
  */
- 
-import Project = require('./project');
 
 import {androidBeforeBuild} from './platform/android';
 import {Build, Platform} from './build-config';
+import {Project} from './project';
 
 /**
  * Function that is executed before the primary raft project is build.

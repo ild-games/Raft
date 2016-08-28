@@ -1,19 +1,20 @@
-import _ = require('underscore');
-import Promise = require('bluebird');
-import Promptly = require('promptly');
-import colors = require('colors');
 
-import Dependency = require('./dependency');
-import Path = require('./path');
-import Project = require('./project');
+import * as _ from 'underscore';
+import * as Promise from 'bluebird';
+import * as Promptly from 'promptly';
+import * as colors from 'colors';
+
 import Template = require('./template');
-import VCS = require('./vcs');
-import raftlog = require('./log');
-
-import {createDependency} from './raft-file-parser';
-import {beforeBuild} from './hooks'
 
 import {parseBuildConfig} from './build-config';
+import {getDependency} from './dependency';
+import {beforeBuild} from './hooks'
+import {raftlog} from './log';
+import {Path} from './path';
+import {Project} from './project';
+import {instantiateTemplate} from './template';
+import {createDependency} from './raft-file-parser';
+
 
 /**
  * Build the raft project the user is currently in.
@@ -33,7 +34,7 @@ export function build(options : {platform? : string, architecture? : string} = {
 
         return Promise.map(
             dependencies,
-            (dependency) => Dependency.getDependency(project, buildSettings, dependency))
+            (dependency) => getDependency(project, buildSettings, dependency))
         .then(() => beforeBuild(project, buildSettings))
         .then(() => project.build(buildSettings));
     });

@@ -136,11 +136,7 @@ export class Project {
      * @return {Path}                    The directory the project should be built in.
      */
     dirForBuild(build : Build) {
-        if (build.isDeploy) {
-            throw Error("deploy has not been implemented");
-        } else {
-            return this.root.append(Project.BUILD_DIR);
-        }
+        return this.root.append(Project.BUILD_DIR);
     }
 
     /**
@@ -173,6 +169,7 @@ export class Project {
 
         return CMake.CMakeOptions
             .create(installPath)
+            .isReleaseBuild(build.releaseBuild)
             .raftIncludeDir(rootProject.dirForDependencyInc(build))
             .raftLibDir(rootProject.dirForDependencyLib(build))
             .raftFrameworkDir(rootProject.dirForDependencyFramework(build))

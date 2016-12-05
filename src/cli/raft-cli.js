@@ -10,6 +10,9 @@ var argv = yargs
             .alias('p', 'platform')
             .describe('p', 'The platform that will be targed by the build. Defaults to Host.')
             .choices('p', ['Host', 'Android'])
+            .boolean('r')
+            .alias('r', 'release')
+            .describe('r', 'Build release binaries instead of debug binaries')
             .argv;
         Raft.Action.build(argv);
     })

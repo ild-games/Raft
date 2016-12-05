@@ -4,7 +4,7 @@
 export interface Build {
     platform : Platform;
     architecture : Architecture;
-    isDeploy : boolean;
+    releaseBuild : boolean;
 }
 
 export enum Platform {
@@ -23,16 +23,16 @@ export enum Architecture {
  * @param  architecture A string describing the architecture.
  * @return The Build configuration to use.
  */
-export function parseBuildConfig(platform? : string, architecture? : string) : Build {
+export function parseBuildConfig(platform? : string, architecture? : string, release? : boolean) : Build {
     if (platform && platform.toUpperCase() === "ANDROID") {
         return {
-            isDeploy : false,
+            releaseBuild : !!release,
             platform : Platform.Android,
             architecture : Architecture.armeabi
         }
     } else {
         return {
-            isDeploy : false,
+            releaseBuild : !!release,
             platform : Platform.Host,
             architecture : Architecture.Host
         }

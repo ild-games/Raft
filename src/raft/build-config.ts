@@ -21,6 +21,7 @@ export enum Architecture {
  * Given the platform and architecture parse out the BuildConfig.
  * @param  platform A string describing the platform.
  * @param  architecture A string describing the architecture.
+ * @param  release A bool controlling if it is a debug build or a release build.
  * @return The Build configuration to use.
  */
 export function parseBuildConfig(platform? : string, architecture? : string, release? : boolean) : Build {

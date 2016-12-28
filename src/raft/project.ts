@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import * as _ from 'underscore';
 
 import * as CMake from './cmake';
@@ -51,13 +50,11 @@ export class Project {
      * Load a project from the raftfile.
      * @return {Promise<Project>} A promise that resolves to a loaded project.
      */
-    load() : Promise<Project> {
-        return this.root.append(Project.RAFT_FILE).read()
-        .then((data) => {
-            raftlog("Project Data", data);
-            this.raftfile = JSON.parse(data);
-            return this;
-        });
+    async load() : Promise<Project> {
+        let data = await this.root.append(Project.RAFT_FILE).read();
+        raftlog("Project Data", data);
+        this.raftfile = JSON.parse(data);
+        return this;
     }
 
     /**

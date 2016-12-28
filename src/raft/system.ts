@@ -1,6 +1,5 @@
 import * as child_process from 'child_process';
 import * as _ from 'underscore';
-import * as Promise from 'bluebird';
 
 import {Path} from './path';
 import {raftlog} from './log';
@@ -33,13 +32,13 @@ export interface ExecuteOptions {
  * @param  {ExecuteOptions}         options  (Optional) @see ExecuteOptions
  * @return {Promise<ProcessOutput>}          Promise that resolves to the process's output.
  */
-export function execute(command : string, args : string [], options? : ExecuteOptions) : Promise<ProcessOutput> {
+export async function execute(command : string, args : string [], options? : ExecuteOptions) : Promise<ProcessOutput> {
     options = options || {};
-    var directoryCreated : Promise<any>;
-    var nodeOptions : {cwd? : string} = {};
-    var wrappedArgs = _.map(args, (arg) => `"${arg}"`);
-    var cmdStr = [command].concat(wrappedArgs).join(" ");
-    var tag = options.tag || cmdStr;
+    let directoryCreated : Promise<any>;
+    let nodeOptions : {cwd? : string} = {};
+    let wrappedArgs = _.map(args, (arg) => `"${arg}"`);
+    let cmdStr = [command].concat(wrappedArgs).join(" ");
+    let tag = options.tag || cmdStr;
 
     if (options.cwd) {
         raftlog(tag, `Running in ${options.cwd.toString()}`);
@@ -54,13 +53,12 @@ export function execute(command : string, args : string [], options? : ExecuteOp
         directoryCreated = Promise.resolve(); //No need to create directory
         raftlog(tag, "Running in the current working directory");
     }
-
     return directoryCreated.then(() => {
-        return Promise.fromNode((callback) => {
-            child_process.exec(cmdStr, nodeOptions, callback);
-        }, {multiArgs : true});
-    }).then((buffers : Buffer []) => {
-        raftlog(tag, "Finished successfullly");
-        return { stdout : buffers[0], stderr : buffers[1]};
+        return new Promise((resolve) => {
+            child_process.exec(cmdStr, nodeOptions as child_process.ExecOptionsWithBufferEncoding, (err : Error, stdout : Buffer, stderr : Buffer) => {
+                raftlog(tag, "Finished successfully");
+                resolve({stdout: stdout, stderr: stderr});
+            });
+        });
     });
 }

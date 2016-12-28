@@ -1,5 +1,3 @@
-import * as Promise from 'bluebird';
-
 import {execute, ProcessOutput} from './system';
 import {Path} from './path';
 
@@ -43,24 +41,21 @@ export class GitRepository implements Repository {
     /**
     * @see VCS.Repository.download
     */
-    download(destination : Path) : Promise<ProcessOutput> {
-        return getGitRepo(this.uri, destination)
-        .then(() => {
-            if (this.branch) {
-                return checkoutBranch(destination, this.branch);
-            }
-        });
+    async download(destination : Path) : Promise<ProcessOutput> {
+        await getGitRepo(this.uri, destination);
+        if (this.branch) {
+            return checkoutBranch(destination, this.branch);
+        }
     }
 
     /**
     * @see VCS.Repository.patch
     */
-     patch(repoDirectory : Path, patch : Path) {
-         if (repoDirectory.exists() && patch.exists()) {
-             return execute('git', ['apply', patch.toString()], {cwd : repoDirectory});
-         }
-         return Promise.reject({});
-     }
+    async patch(repoDirectory : Path, patch : Path) {
+        if (repoDirectory.exists() && patch.exists()) {
+            await execute('git', ['apply', patch.toString()], {cwd : repoDirectory});
+        }
+    }
 }
 
 function getGitRepo(uri : string, destination : Path) : Promise<any> {

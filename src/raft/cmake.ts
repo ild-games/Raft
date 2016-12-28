@@ -36,12 +36,8 @@ const RAFT_IS_ANDROID = "RAFT_IS_ANDROID";
 * @param  {CMakeOptions}  options   The options that will be used for the build.
 * @return {Promise<any>}            Promise that resolves once the cmake configuration is complete.
 */
-export function configure(
-    srcPath : Path,
-    buildPath : Path,
-    options : CMakeOptions) : Promise<any> {
-
-        return execute("cmake", [srcPath.toString()].concat(options.toArray()), {cwd : buildPath});
+export function configure(srcPath : Path, buildPath : Path, options : CMakeOptions) : Promise<any> {
+    return execute("cmake", [srcPath.toString()].concat(options.toArray()), {cwd : buildPath});
 }
 
 /**

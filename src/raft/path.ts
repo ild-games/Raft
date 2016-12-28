@@ -1,8 +1,8 @@
 import * as fs from 'fs';
+import {F_OK} from 'constants';
 import * as npath from 'path';
 import * as mkdirp from 'mkdirp';
 import * as _ from 'underscore';
-import * as Promise from 'bluebird';
 import * as os from 'os';
 
 /**
@@ -24,7 +24,7 @@ export class Path {
      * @return {Path}                A new Path instance with the segments appendend.
      */
     append(... paths : (string|Path) []) : Path {
-        var asStrings =  _.map(paths, (path) => path.toString());
+        let asStrings =  _.map(paths, (path) => path.toString());
         return new Path(npath.join(this.path, ...asStrings));
     }
 
@@ -41,7 +41,7 @@ export class Path {
      * @return {boolean} True if the path is a root path, false otherwise.
      */
     isRoot() : boolean {
-        var parsedPath = npath.parse(this.path);
+        let parsedPath = npath.parse(this.path);
         return parsedPath.root === parsedPath.dir && parsedPath.root !== "";
     }
 
@@ -59,7 +59,7 @@ export class Path {
      */
     exists() : boolean {
         try {
-            fs.accessSync(this.path, fs.F_OK);
+            fs.accessSync(this.path, F_OK);
             return true;
         } catch (error) {
             return false;
@@ -81,13 +81,14 @@ export class Path {
      *                            created and false if it already existed.
      */
     createDirectory() : Promise<boolean> {
-        return Promise.fromCallback((callback) => {
-            mkdirp(this.path, callback);
-        }).then((success) => {
-            return true;
-        }).catch((error) => {
-            //TODO: Validate error was caused by directory existing.
-            return false;
+        return new Promise((resolve) => {
+            mkdirp(this.path, (err : any, made : string) => {
+                if (!err) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            });
         });
     }
 
@@ -98,9 +99,9 @@ export class Path {
      */
     copyTo(path : Path) : Promise<any> {
         return new Promise((resolve, reject) => {
-            var rd = fs.createReadStream(this.toString());
+            let rd = fs.createReadStream(this.toString());
             rd.on('error', reject);
-            var wr = fs.createWriteStream(path.toString());
+            let wr = fs.createWriteStream(path.toString());
             wr.on('error', reject);
             wr.on('finish', resolve);
             rd.pipe(wr);
@@ -112,11 +113,10 @@ export class Path {
      * @return {Promise<string>} Resolves to the string contained within the file.
      */
     read() : Promise<string> {
-        return Promise
-        .fromCallback((callback) => {
-            fs.readFile(this.path.toString(), callback)
-        }).then((buffer : Buffer) => {
-            return buffer.toString();
+        return new Promise((resolve) => {
+            fs.readFile(this.path.toString(), (err : any, buffer : Buffer) => {
+                return resolve(buffer.toString());
+            });
         });
     }
 

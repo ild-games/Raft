@@ -54,10 +54,14 @@ export async function execute(command : string, args : string [], options? : Exe
         raftlog(tag, "Running in the current working directory");
     }
     return directoryCreated.then(() => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             child_process.exec(cmdStr, nodeOptions as child_process.ExecOptionsWithBufferEncoding, (err : Error, stdout : Buffer, stderr : Buffer) => {
-                raftlog(tag, "Finished successfully");
-                resolve({stdout: stdout, stderr: stderr});
+                if (err) {
+                    reject({stdout: stdout, stderr: stderr});
+                } else {
+                    raftlog(tag, "Finished successfully");
+                    resolve({stdout: stdout, stderr: stderr});
+                }
             });
         });
     });

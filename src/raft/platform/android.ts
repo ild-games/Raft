@@ -1,5 +1,3 @@
-import * as Promise from 'bluebird';
-
 import {Build, Architecture} from '../build-config';
 import {Project} from '../project';
 import {Path} from '../path';
@@ -11,10 +9,10 @@ const STL_LIB_NAME = new Path("libc++_shared.so");
  * Hook executed before the project is built. Android uses this hook to install
  * the stl into the libs directory.
  */
-export function androidBeforeBuild(project : Project, buildConfig : Build) : Promise<any> {
-    var stlPath = getStlPath(buildConfig.architecture);
-    var libPath = project.dirForDependencyLib(buildConfig)
-    return stlPath.copyTo(libPath.append(STL_LIB_NAME));
+export async function androidBeforeBuild(project : Project, buildConfig : Build) {
+    let stlPath = getStlPath(buildConfig.architecture);
+    let libPath = project.dirForDependencyLib(buildConfig)
+    await stlPath.copyTo(libPath.append(STL_LIB_NAME));
 }
 
 /**

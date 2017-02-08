@@ -1,5 +1,4 @@
 node_modules/
 release/
-tsd/typings/
+build/
 *.swp
-tsconfig.json

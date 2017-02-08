@@ -1,4 +1,3 @@
-import * as Promise from 'bluebird';
 import * as _ from 'underscore';
 
 import * as CMake from './cmake';
@@ -56,18 +55,16 @@ export class RepositoryDependency implements Dependency {
     /**
      * @see Dependency.Dependency.download
      */
-    download(project : Project, build : Build) : Promise<any> {
-
-        var dependencyDir = project.dirForDependency(this.name);
-
+    async download(project : Project, build : Build) {
+        let dependencyDir = project.dirForDependency(this.name);
         if (dependencyDir.exists()) {
-            return Promise.resolve(null);
+            return;
         }
 
-        return this.repository.download(dependencyDir)
-        .then(() => {
-            return Promise.mapSeries(this.patches, patch => this.repository.patch(dependencyDir, patch))
-        });
+        await this.repository.download(dependencyDir);
+        for (let patch of this.patches) {
+            await this.repository.patch(dependencyDir, patch);
+        }
     }
 
     /**
@@ -88,10 +85,10 @@ export class CMakeDependency extends RepositoryDependency {
      * @see Dependency.Dependency.buildInstall
      */
     buildInstall(project : Project, build : Build) : Promise<any> {
-        var sourceLocation = project.dirForDependency(this.name);
-        var buildLocation = project.dirForDependencyBuild(this.name, build);
-        var installLocation = project.dirForDependencyInstall(build);
-        var cmakeOptions = CMake.CMakeOptions
+        let sourceLocation = project.dirForDependency(this.name);
+        let buildLocation = project.dirForDependencyBuild(this.name, build);
+        let installLocation = project.dirForDependencyInstall(build);
+        let cmakeOptions = CMake.CMakeOptions
             .create(installLocation)
             .isReleaseBuild(build.releaseBuild)
             .platform(build.platform)

@@ -1,11 +1,9 @@
-//Typings files don't support ES6 style import
-import mustache = require('gulp-mustache');
-import rename = require('gulp-rename');
+let mustache = require('gulp-mustache');
 
 import * as gulp from 'gulp';
 import * as gulpif from 'gulp-if';
-import * as Promise from 'bluebird';
 import * as rimraf from 'rimraf';
+import * as rename from 'gulp-rename';
 
 import {Path} from './path';
 import {Repository} from './vcs';
@@ -43,14 +41,13 @@ export function instantiateTemplate(templatePath : Path, destination : Path, con
 * @param  context      Values in the context will be available in the templates.
 * @return The promise will resolve after the template is instantiated.
 */
-export function instantiateRepositoryTemplate(repo : Repository, destination : Path, context : any) {
-    var repoLocation = destination.append(".template");
-    return repo.download(repoLocation)
-    .then(() => {
-        return instantiateTemplate(repoLocation, destination, context);
-    }).then(() => {
-        return Promise.fromCallback((callback) => {
-            rimraf(repoLocation.toString(), callback);
+export async function instantiateRepositoryTemplate(repo : Repository, destination : Path, context : any) {
+    let repoLocation = destination.append(".template");
+    await repo.download(repoLocation);
+    await instantiateTemplate(repoLocation, destination, context);
+    return new Promise((resolve) => {
+        rimraf(repoLocation.toString(), (err : Error) => {
+            resolve();
         });
     });
 }

@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+
 import * as _ from 'underscore';
 
 import * as CMake from './cmake';
@@ -7,7 +7,7 @@ import {DependencyDescriptor} from './raft-file-descriptor';
 import {Build} from './build-config';
 import {Path} from './path';
 import {Project} from './project';
-import {Repository} from './VCS';
+import {Repository} from './vcs';
 
 /**
  * Interface used to interact with a build dependency.
@@ -56,7 +56,7 @@ export class RepositoryDependency implements Dependency {
     /**
      * @see Dependency.Dependency.download
      */
-    download(project : Project, build : Build) : Promise<any> {
+    async download(project : Project, build : Build) : Promise<any> {
 
         var dependencyDir = project.dirForDependency(this.name);
 
@@ -64,10 +64,10 @@ export class RepositoryDependency implements Dependency {
             return Promise.resolve(null);
         }
 
-        return this.repository.download(dependencyDir)
-        .then(() => {
-            return Promise.mapSeries(this.patches, patch => this.repository.patch(dependencyDir, patch))
-        });
+        await this.repository.download(dependencyDir);
+        for (let patch of this.patches) {
+            await this.repository.patch(dependencyDir, patch);
+        }
     }
 
     /**

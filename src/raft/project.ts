@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+
 import * as _ from 'underscore';
 
 import * as CMake from './cmake';

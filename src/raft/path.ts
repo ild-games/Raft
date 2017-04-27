@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as npath from 'path';
 import * as mkdirp from 'mkdirp';
 import * as _ from 'underscore';
-import * as Promise from 'bluebird';
+
 import * as os from 'os';
 
 /**
@@ -58,12 +58,7 @@ export class Path {
      * @return {boolean} True if the file exists, false otherwise.
      */
     exists() : boolean {
-        try {
-            fs.accessSync(this.path, fs.F_OK);
-            return true;
-        } catch (error) {
-            return false;
-        }
+        return fs.existsSync(this.path);
     }
 
     /**
@@ -81,13 +76,10 @@ export class Path {
      *                            created and false if it already existed.
      */
     createDirectory() : Promise<boolean> {
-        return Promise.fromCallback((callback) => {
-            mkdirp(this.path, callback);
-        }).then((success) => {
-            return true;
-        }).catch((error) => {
-            //TODO: Validate error was caused by directory existing.
-            return false;
+        return new Promise(function(resolve, reject) {
+            mkdirp(this.path, function(error, result) {
+                resolve(!error);
+            });
         });
     }
 
@@ -112,11 +104,11 @@ export class Path {
      * @return {Promise<string>} Resolves to the string contained within the file.
      */
     read() : Promise<string> {
-        return Promise
-        .fromCallback((callback) => {
-            fs.readFile(this.path.toString(), callback)
-        }).then((buffer : Buffer) => {
-            return buffer.toString();
+        return new Promise((resolve, reject) => {
+            fs.readFile(this.path.toString(), (err, buffer) => {
+                if (err) { reject(err)}
+                else { resolve(buffer.toString()) };
+            });
         });
     }
 

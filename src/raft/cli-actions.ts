@@ -1,6 +1,6 @@
 
 import * as _ from 'underscore';
-import * as Promise from 'bluebird';
+
 import * as Promptly from 'promptly';
 import * as colors from 'colors';
 
@@ -30,11 +30,9 @@ export function build(options : {platform? : string, architecture? : string, rel
 
         raftlog("Project", `Getting ${dependencies.length} for the project`);
 
-        return Promise.map(
-            dependencies,
-            (dependency) => getDependency(project, buildSettings, dependency))
-        .then(() => beforeBuild(project, buildSettings))
-        .then(() => project.build(buildSettings));
+        return Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)))
+            .then(() => beforeBuild(project, buildSettings))
+            .then(() => project.build(buildSettings));
     });
 }
 
@@ -63,16 +61,19 @@ export function create(templateType : string) : Promise<any> {
     });
 };
 
-function ask(question : string, validatorFunction? : (input : string) => string) : Promise<any> {
-    return Promise.fromCallback((callback) => {
-        if (validatorFunction) {
-            Promptly.prompt(question, {validator : validatorFunction}, callback);
-        } else {
-            Promptly.prompt(question, callback);
-        }
-    });
-}
-
 function errorMessage(msg : string) : string {
     return colors.red.underline("Error") + ": " + msg;
+}
+
+function ask(question : string, validatorFunction? : (input : string) => string) : Promise<any> {
+    return new Promise(function(resolve, reject) {
+        let validator = function(id : string) {return id};
+        Promptly.prompt(question, {validator}, (err, value) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(value);
+            }
+        });
+    });
 }

@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+
 
 import {Build, Architecture} from '../build-config';
 import {Project} from '../project';

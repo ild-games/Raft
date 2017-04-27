@@ -87,7 +87,7 @@ export class CMakeDependency extends RepositoryDependency {
     /**
      * @see Dependency.Dependency.buildInstall
      */
-    buildInstall(project : Project, build : Build) : Promise<any> {
+    async buildInstall(project : Project, build : Build) : Promise<any> {
         var sourceLocation = project.dirForDependency(this.name);
         var buildLocation = project.dirForDependencyBuild(this.name, build);
         var installLocation = project.dirForDependencyInstall(build);
@@ -97,12 +97,9 @@ export class CMakeDependency extends RepositoryDependency {
             .platform(build.platform)
             .configOptions(this.descriptor.configOptions);
 
-        return CMake.configure(sourceLocation, buildLocation, cmakeOptions)
-        .then(() => {
-            return CMake.build(buildLocation);
-        }).then(() => {
-            return CMake.install(buildLocation);
-        });
+        await CMake.configure(sourceLocation, buildLocation, cmakeOptions)
+        await CMake.build(buildLocation);
+        await CMake.install(buildLocation);
     }
 }
 

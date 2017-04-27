@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es2016",
+        "target": "ES5",
         "outDir": "build",
         "module": "commonjs",
         "moduleResolution": "node",
@@ -8,7 +8,7 @@
         "emitDecoratorMetadata": true,
         "noImplicitAny": true,
         "removeComments": true,
-        "lib": ["dom", "es2016", "dom.iterable", "scripthost", "es2017.object"]
+        "lib": ["dom", "es2015", "dom.iterable", "scripthost", "es2017.object"]
     },
     "compileOnSave": false,
     "exclude": [

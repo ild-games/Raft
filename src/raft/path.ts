@@ -76,7 +76,7 @@ export class Path {
      *                            created and false if it already existed.
      */
     createDirectory() : Promise<boolean> {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             mkdirp(this.path, function(error, result) {
                 resolve(!error);
             });

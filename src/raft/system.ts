@@ -37,7 +37,7 @@ export async function execute(command : string, args : string [], options? : Exe
     options = options || {};
     var directoryCreated : Promise<any>;
     var nodeOptions : {cwd? : string} = {};
-    var wrappedArgs = _.map(args, (arg) => `"${arg}"`);
+    var wrappedArgs = args.map(arg => `"${arg}"`);
     var cmdStr = [command].concat(wrappedArgs).join(" ");
     var tag = options.tag || cmdStr;
 
@@ -57,6 +57,7 @@ export async function execute(command : string, args : string [], options? : Exe
     return new Promise<ProcessOutput>(function (resolve, reject) {
         child_process.exec(cmdStr, nodeOptions, function(error, buffers) {
             if (error) {
+                raftlog(tag, "Rejected with an error");
                 reject(error);
             } else {
                 raftlog(tag, "Finished successfullly");

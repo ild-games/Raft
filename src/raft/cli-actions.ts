@@ -19,21 +19,25 @@ import {createDependency} from './raft-file-parser';
  * @param  options Can be used to specify the parameters for the build configuration.
  * @return A promise that resolves once the build is finished.
  */
-export function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
-
+export async function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
     var buildSettings = parseBuildConfig(options.platform, options.architecture, options.release);
 
-    return Project.find(Path.cwd()).then(function(project) {
-        var dependencies = _.map(project.dependencies(), (dependency) => {
-            return createDependency(dependency, project.raftDir)
-        });
-
-        raftlog("Project", `Getting ${dependencies.length} for the project`);
-
-        return Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)))
-            .then(() => beforeBuild(project, buildSettings))
-            .then(() => project.build(buildSettings));
+    let project = await Project.find(Path.cwd());
+    var dependencies = _.map(project.dependencies(), (dependency) => {
+        return createDependency(dependency, project.raftDir);
     });
+
+    raftlog("Project", `Getting ${dependencies.length} for the project`);
+
+    await Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)));
+
+    raftlog("Project", `Running before build hooks`);
+    await beforeBuild(project, buildSettings);
+
+    raftlog("Project", `Running the build`);
+    await project.build(buildSettings);
+
+    raftlog("Project", `Exiting`);
 }
 
 /**

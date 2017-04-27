@@ -3,4 +3,3 @@ build/
 release/
 tsd/typings/
 *.swp
-tsconfig.json

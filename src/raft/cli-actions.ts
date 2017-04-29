@@ -4,15 +4,39 @@ import * as _ from 'underscore';
 import * as Promptly from 'promptly';
 import * as colors from 'colors';
 
-import {parseBuildConfig} from './build-config';
-import {getDependency} from './dependency';
-import {beforeBuild} from './hooks'
-import {raftlog} from './log';
-import {Path} from './path';
-import {Project} from './project';
+import {Build, Platform} from './core/build-config';
+import {getDependency} from './core/dependency';
+import {raftlog} from './core/log';
+import {Path} from './core/path';
+import {Project} from './core/project';
 import {instantiateTemplate} from './template';
-import {createDependency} from './raft-file-parser';
+import {createDependency} from './core/raft-file-parser';
 
+import {HostPlatform} from './platform/host';
+import {AndroidPlatform} from './platform/android';
+
+/**
+ * Given the platform and architecture parse out the BuildConfig.
+ * @param  platform A string describing the platform.
+ * @param  architecture A string describing the architecture.
+ * @param  release A bool controlling if it is a debug build or a release build.
+ * @return The Build configuration to use.
+ */
+export function parseBuildConfig(platformName? : string, architecture? : string, release? : boolean) : Build {
+    let platform : Platform;
+
+    if (platformName && platformName.toUpperCase() === "ANDROID") {
+        platform = new AndroidPlatform();
+    } else {
+        platform = new HostPlatform();
+    }
+
+    return {
+        releaseBuild : !!release,
+        platform,
+        architecture : platform.getArchitectures()[0]
+    }
+}
 
 /**
  * Build the raft project the user is currently in.
@@ -32,7 +56,7 @@ export async function build(options : {platform? : string, architecture? : strin
     await Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)));
 
     raftlog("Project", `Running before build hooks`);
-    await beforeBuild(project, buildSettings);
+    await buildSettings.architecture.beforeBuild(project, buildSettings);
 
     raftlog("Project", `Running the build`);
     await project.build(buildSettings);

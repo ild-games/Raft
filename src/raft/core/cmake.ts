@@ -1,10 +1,9 @@
 import * as _ from 'underscore';
 
-
-import {Flag} from './raft-file-descriptor';
 import {Path} from './path';
-import {Platform} from './build-config';
+import {Architecture} from './build-config';
 import {execute, ProcessOutput} from './system';
+import {Flag, RAFT_FLAGS} from './flags';
 
 export const FRAMEWORK_DIR = "framework";
 
@@ -17,18 +16,8 @@ const CMAKE_INSTALL_PREFIX = "CMAKE_INSTALL_PREFIX";
 const CMAKE_INSTALL_FRAMEWORK_PREFIX = "CMAKE_INSTALL_FRAMEWORK_PREFIX";
 const CMAKE_TOOLCHAIN = "CMAKE_TOOLCHAIN_FILE";
 
-//Android CMake Options
-const ANDROID_ABI = "ANDROID_ABI";
-const ANDROID_STL = "ANDROID_STL";
-const ANDROID_NATIVE_API_LEVEL = "ANDROID_NATIVE_API_LEVEL";
-
 //Raft CMake Options
 const RAFT = "RAFT";
-const RAFT_INCLUDE_DIR = "RAFT_INCLUDE_DIR";
-const RAFT_LIB_DIR = "RAFT_LIB_DIR";
-const RAFT_FRAMEWORK_DIR = "RAFT_FRAMEWORK_DIR";
-const RAFT_IS_DESKTOP = "RAFT_IS_DESKTOP";
-const RAFT_IS_ANDROID = "RAFT_IS_ANDROID";
 
 /**
 * Configure a cmake project.
@@ -77,7 +66,7 @@ export class CMakeOptions {
     * @return New CMakeOptions with the include directory modified.
     */
     raftIncludeDir(path : Path) : CMakeOptions {
-        return this.setPath(RAFT_INCLUDE_DIR, path);
+        return this.setPath(RAFT_FLAGS.INCLUDE_DIR, path);
     }
 
     /**
@@ -86,7 +75,7 @@ export class CMakeOptions {
     * @return New CMakeOptions with the lib path modified.
     */
     raftLibDir(path : Path) : CMakeOptions {
-        return this.setPath(RAFT_LIB_DIR, path)
+        return this.setPath(RAFT_FLAGS.LIB_DIR, path)
     }
 
     /**
@@ -95,7 +84,7 @@ export class CMakeOptions {
     * @return New CMakeOptios with the framework dependencies set.
     */
     raftFrameworkDir(path : Path) : CMakeOptions {
-        return this.setPath(RAFT_FRAMEWORK_DIR, path);
+        return this.setPath(RAFT_FLAGS.FRAMEWORK_DIR, path);
     }
 
     /**
@@ -114,23 +103,10 @@ export class CMakeOptions {
     * @param platform Platform that is being built.
     * @return CMakeOptions with platform specific flags set.
     */
-    platform(platform : Platform) : CMakeOptions {
-        var result = this.clone();
-        switch (platform) {
-            case Platform.Host:
-            result.options[RAFT_IS_DESKTOP] = CMAKE_TRUE;
-            result.options[RAFT_IS_ANDROID] = CMAKE_FALSE;
-            break;
-            case Platform.Android:
-            result.options[RAFT_IS_DESKTOP] = CMAKE_FALSE;
-            result.options[RAFT_IS_ANDROID] = CMAKE_TRUE;
-            result.options[ANDROID_ABI] = "armeabi"; //TODO support more architectures
-            result.options[ANDROID_STL] = "c++_shared"; //TODO ues clang
-            result.options[ANDROID_NATIVE_API_LEVEL] = "android-9";
-            result.options[CMAKE_TOOLCHAIN] = raftAndroidToolchainFile().toString();
-            break;
-            default:
-            throw Error(`Unsupported platform: ${platform}`);
+    architecture(architecture : Architecture) : CMakeOptions {
+        let result = this.clone();
+        for (let flag of architecture.getCMakeFlags()) {
+            result.options[flag.name] = flag.value;
         }
         return result;
     }
@@ -193,7 +169,7 @@ export function install(buildPath : Path) : Promise<ProcessOutput> {
 * @return {Path} Path the cmake files are stored in.
 */
 export function raftCMakeDir() : Path {
-    return (new Path(__dirname)).parent().parent().parent().append('cmake');
+    return (new Path(__dirname)).parent().parent().parent().parent().append('cmake');
 }
 
 /**
@@ -207,12 +183,4 @@ export function raftCMakeDir() : Path {
 */
 export function raftCmakeFile() {
     return raftCMakeDir().append("raft.cmake");
-}
-
-/**
-* Get the path to the Android Toolchain file.
-* @return {Path} Path to the Android toolchain file.
-*/
-export function raftAndroidToolchainFile() {
-    return raftCMakeDir().append("toolchains","android","android.toolchain.cmake");
 }

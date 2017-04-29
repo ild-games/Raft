@@ -86,8 +86,8 @@ export class Project {
     dirForDependencyBuild(name : string, build : Build) {
         return this.root.append(
             Project.DEPENDENCY_BUILD_DIR,
-            Platform[build.platform],
-            Architecture[build.architecture],
+            build.platform.name,
+            build.architecture.name,
             name);
     }
 
@@ -99,8 +99,8 @@ export class Project {
     dirForDependencyInstall(build :Build) {
         return this.root.append(
             Project.DEPENDENCY_INSTALL_DIR,
-            Platform[build.platform],
-            Architecture[build.architecture]);
+            build.platform.name,
+            build.architecture.name);
     }
 
     /**
@@ -173,7 +173,7 @@ export class Project {
             .raftIncludeDir(rootProject.dirForDependencyInc(build))
             .raftLibDir(rootProject.dirForDependencyLib(build))
             .raftFrameworkDir(rootProject.dirForDependencyFramework(build))
-            .platform(build.platform);
+            .architecture(build.architecture);
     }
 
     /**

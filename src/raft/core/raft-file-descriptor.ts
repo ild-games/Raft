@@ -1,3 +1,5 @@
+import {Flag} from './flags';
+
 /**
  * Included in raftfiles to allow configuration of Dependencies.
  */
@@ -51,13 +53,4 @@ export interface RepositoryDescriptor {
  */
 export interface RaftfileRoot {
     dependencies : DependencyDescriptor[];
-}
-
-/**
- * Describes how a flag should be formatted in a RaftFile. One usage of this is
- * passing configuration options to CMake.
- */
-export interface Flag {
-    name : string,
-    value :  string
 }

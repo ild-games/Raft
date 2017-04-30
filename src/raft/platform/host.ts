@@ -1,12 +1,8 @@
 import {Build, Platform, Architecture} from '../core/build-config';
 import {Flag, RAFT_FLAGS} from '../core/flags';
 
-export class HostPlatform implements Platform {
+export class HostPlatform extends Platform {
     name : string = "Host";
-
-    constructor() {
-
-    }
 
     getArchitectures() : HostArchitecture[] {
         return [new HostArchitecture()];

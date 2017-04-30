@@ -16,7 +16,7 @@ export function findNDK() : Path {
     return new Path(process.env.ANDROID_NDK);
 }
 
-export class AndroidPlatform implements Platform {
+export class AndroidPlatform extends Platform {
     name : string = "Android";
 
     getArchitectures() : AndroidArchitecture[] {

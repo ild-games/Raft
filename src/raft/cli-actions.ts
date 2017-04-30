@@ -10,7 +10,8 @@ import {raftlog} from './core/log';
 import {Path} from './core/path';
 import {Project} from './core/project';
 import {instantiateTemplate} from './template';
-import {createDependency} from './core/raft-file-parser';
+import {createDependency, getSupportedArchitectures} from './raft-file-parser';
+import {throwCommandLineError} from './core/error';
 
 import {HostPlatform} from './platform/host';
 import {AndroidPlatform} from './platform/android';
@@ -23,6 +24,7 @@ import {AndroidPlatform} from './platform/android';
  * @return The Build configuration to use.
  */
 export function parseBuildConfig(platformName? : string, architecture? : string, release? : boolean) : Build {
+
     let platform : Platform;
 
     if (platformName && platformName.toUpperCase() === "ANDROID") {
@@ -44,12 +46,25 @@ export function parseBuildConfig(platformName? : string, architecture? : string,
  * @return A promise that resolves once the build is finished.
  */
 export async function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
-    var buildSettings = parseBuildConfig(options.platform, options.architecture, options.release);
-
     let project = await Project.find(Path.cwd());
-    var dependencies = _.map(project.dependencies(), (dependency) => {
+
+    let dependencies = _.map(project.dependencies(), (dependency) => {
         return createDependency(dependency, project.raftDir);
     });
+
+    let architectures = getSupportedArchitectures(project.architectures())
+        .filter(arch => !options.platform|| options.platform.toUpperCase() === arch.platform.name.toUpperCase())
+        .filter(arch => !options.architecture || options.architecture.toUpperCase() === arch.architecture.name.toUpperCase());
+
+    if (architectures.length === 0) {
+        throwCommandLineError("No match for the provided architecture and platform");
+    }
+
+    let buildSettings = {
+        releaseBuild : !!options.release,
+        platform : architectures[0].platform,
+        architecture : architectures[0].architecture
+    }
 
     raftlog("Project", `Getting ${dependencies.length} for the project`);
 

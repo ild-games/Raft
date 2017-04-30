@@ -15,9 +15,14 @@ export interface Build {
  * Represents a specific target platform. Each platform can have multiple architectures.
  * For example Android is a platform and armabi is an architecture.
  */
-export interface Platform {
+export abstract class Platform {
     name : string;
-    getArchitectures() : Architecture [];
+
+    abstract getArchitectures() : Architecture [];
+
+    getDefaultArchitecture() : Architecture {
+        return this.getArchitectures()[0];
+    }
 }
 
 /**

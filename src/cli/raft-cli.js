@@ -2,6 +2,12 @@
 var Raft = require("raft");
 
 var yargs = require('yargs');
+
+function reportError(error) {
+    console.log("Error executing Raft");
+    console.log(error.stack);
+}
+
 var argv = yargs
     .usage('Usage: $0 <command>')
     .command('build', 'Build the raft project', function(yargs) {
@@ -14,7 +20,7 @@ var argv = yargs
             .alias('r', 'release')
             .describe('r', 'Build release binaries instead of debug binaries')
             .argv;
-        Raft.Action.build(argv);
+        Raft.Action.build(argv).catch(reportError);
     })
     .command('create', 'Create an instance of a template', function(yargs) {
         var argv = yargs
@@ -25,7 +31,7 @@ var argv = yargs
             .describe('t', 'Template folder in ~/.raft/templates/')
             .argv;
         checkCommands(yargs, argv, 1);
-        Raft.Action.create(argv.template);
+        Raft.Action.create(argv.template).catch(reportError);
     })
     .argv;
 

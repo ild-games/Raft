@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+
 import * as _ from 'underscore';
 
 import {Build} from './build-config';
@@ -68,31 +68,24 @@ export class RaftDependency extends RepositoryDependency {
                 throw Error(`The Dependency ${this.name} is not a raft dependency`);
             }
 
-            var dependencies = _.map(this.project.dependencies(), (dependency) => createDependency(dependency, this.project.raftDir));
-            return Promise.map(
-                dependencies,
-                (dependency) => dependency.download(project, build)
-            );
+            var dependencies = this.project.dependencies().map(dependency => createDependency(dependency, this.project.raftDir));
+            return Promise.all(dependencies.map((dependency) => dependency.download(project, build)));
         });
     }
 
     /**
      * @see Dependency.buildInstall
      */
-    buildInstall(project : Project, build : Build) : Promise<any> {
+    async buildInstall(project : Project, build : Build) : Promise<any> {
         var buildPath = project.dirForDependencyBuild(this.name, build);
-        var dependencies = _.map(this.project.dependencies(), (dependency) => createDependency(dependency, this.project.raftDir));
+        var dependencies = this.project.dependencies().map(dependency => createDependency(dependency, this.project.raftDir));
 
-        return Promise.map(
-            dependencies,
-            (dependency) => dependency.buildInstall(project, build)
-        ).then(() => {
-            var options = this.project.cmakeOptions(project, build);
-            return CMake.configure(this.project.root, buildPath, options);
-        }).then(() => {
-            return CMake.build(buildPath);
-        }).then(() => {
-            return CMake.install(buildPath);
-        })
+        await Promise.all(dependencies.map(dependency => dependency.buildInstall(project, build)));
+
+        var options = this.project.cmakeOptions(project, build);
+        
+        await CMake.configure(this.project.root, buildPath, options);
+        await CMake.build(buildPath);
+        await CMake.install(buildPath);
     };
 }

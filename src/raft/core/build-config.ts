@@ -1,3 +1,4 @@
+import {Path} from './path';
 import {Project} from './project';
 import {Flag} from './flags';
 
@@ -8,6 +9,7 @@ export interface Build {
     platform : Platform;
     architecture : Architecture;
     releaseBuild : boolean;
+    buildDirectory : Path;
 }
 
 

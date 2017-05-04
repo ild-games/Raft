@@ -17,35 +17,11 @@ import {HostPlatform} from './platform/host';
 import {AndroidPlatform} from './platform/android';
 
 /**
- * Given the platform and architecture parse out the BuildConfig.
- * @param  platform A string describing the platform.
- * @param  architecture A string describing the architecture.
- * @param  release A bool controlling if it is a debug build or a release build.
- * @return The Build configuration to use.
- */
-export function parseBuildConfig(platformName? : string, architecture? : string, release? : boolean) : Build {
-
-    let platform : Platform;
-
-    if (platformName && platformName.toUpperCase() === "ANDROID") {
-        platform = new AndroidPlatform();
-    } else {
-        platform = new HostPlatform();
-    }
-
-    return {
-        releaseBuild : !!release,
-        platform,
-        architecture : platform.getArchitectures()[0]
-    }
-}
-
-/**
  * Build the raft project the user is currently in.
  * @param  options Can be used to specify the parameters for the build configuration.
  * @return A promise that resolves once the build is finished.
  */
-export async function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
+export async function build(options : {platform? : string, architecture? : string, release? : boolean, builddirectory?: string} = {}) : Promise<any> {
     let project = await Project.find(Path.cwd());
 
     let dependencies = _.map(project.dependencies(), (dependency) => {
@@ -60,10 +36,13 @@ export async function build(options : {platform? : string, architecture? : strin
         throwCommandLineError("No match for the provided architecture and platform");
     }
 
+    let defaultBuildDir = new Path("build").append(architectures[0].platform.name, architectures[0].architecture.name);
+
     let buildSettings = {
         releaseBuild : !!options.release,
         platform : architectures[0].platform,
-        architecture : architectures[0].architecture
+        architecture : architectures[0].architecture,
+        buildDirectory : options.builddirectory ? new Path(options.builddirectory) : defaultBuildDir
     }
 
     raftlog("Project", `Getting ${dependencies.length} for the project`);

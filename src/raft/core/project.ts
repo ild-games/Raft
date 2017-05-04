@@ -13,7 +13,6 @@ import {Path} from './path';
 export class Project {
     private static RAFT_DIR = new Path('Raft');
     private static RAFT_FILE = Project.RAFT_DIR.append('raftfile.json');
-    private static BUILD_DIR = new Path('build');
     private static DEPENDENCY_DIR = Project.RAFT_DIR.append('libs');
     private static DEPENDENCY_SRC_DIR = Project.DEPENDENCY_DIR.append('src');
     private static DEPENDENCY_BUILD_DIR = Project.DEPENDENCY_DIR.append('build');
@@ -149,7 +148,7 @@ export class Project {
      * @return {Path}                    The directory the project should be built in.
      */
     dirForBuild(build : Build) {
-        return this.root.append(Project.BUILD_DIR);
+        return this.root.append(build.buildDirectory);
     }
 
     /**

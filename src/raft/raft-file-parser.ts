@@ -1,13 +1,17 @@
 
 import * as _ from 'underscore';
 
-import {Build} from './build-config';
-import * as CMake from './cmake';
-import {Path} from './path';
-import {Project} from './project';
-import {RepositoryDependency, CMakeDependency} from './dependency';
-import {DependencyDescriptor, RepositoryDescriptor, RaftfileRoot} from './raft-file-descriptor';
-import {Repository, GitRepository} from './vcs';
+import {Architecture, Build, Platform} from './core/build-config';
+import * as CMake from './core/cmake';
+import {Path} from './core/path';
+import {Project} from './core/project';
+import {Dependency, CMakeDependency, RaftDependency} from './core/dependency';
+import {DependencyDescriptor, RepositoryDescriptor, ArchitectureDescriptor} from './core/raft-file-descriptor';
+import {Repository, GitRepository} from './core/vcs';
+import {throwConfigurationError} from './core/error';
+
+import {AndroidPlatform} from './platform/android';
+import {HostPlatform} from './platform/host';
 
 
 /**
@@ -15,7 +19,7 @@ import {Repository, GitRepository} from './vcs';
  * @param  {RaftFile.DependencyDescriptor} dependencyDescriptor Descriptor of a dependency loaded from a raft file.
  * @return {[type]}                                             An object that can be used to interact with the dependency.
  */
-export function createDependency(dependencyDescriptor : DependencyDescriptor, raftDir : Path) {
+export function createDependency(dependencyDescriptor : DependencyDescriptor, raftDir : Path) : Dependency {
     var repo = createRepository(dependencyDescriptor.repository);
     var buildSystem = dependencyDescriptor.buildSystem;
 
@@ -29,7 +33,7 @@ export function createDependency(dependencyDescriptor : DependencyDescriptor, ra
     if (buildSystem === "cmake") {
         return new CMakeDependency(dependencyDescriptor, repo, patches);
     } else if (buildSystem === "raft") {
-        return new RaftDependency(dependencyDescriptor, repo, patches);
+        return new RaftDependency(dependencyDescriptor, repo, patches, createDependency);
     } else {
         throw Error("unknown build system type");
     }
@@ -48,44 +52,47 @@ export function createRepository(repoDescriptor : RepositoryDescriptor) : Reposi
     }
 }
 
+export interface SupportedArchitecture {
+    architecture : Architecture,
+    platform : Platform
+}
+
 /**
- * A dependency that uses Raft for managing its own dependencies.
+ * Given a raftfile determine which architectures it supports.
  */
-export class RaftDependency extends RepositoryDependency {
-    private project : Project;
+export function getSupportedArchitectures(supportedArchitectures : ArchitectureDescriptor[]) : SupportedArchitecture [] {
+    let supported : SupportedArchitecture[] = [];
 
-    /**
-     * @see Dependency.download
-     */
-    download(project : Project, build : Build) : Promise<any> {
-        var buildLocation = project.dirForDependency(this.name);
-        return super.download(project, build)
-        .then(() => Project.find(buildLocation))
-        .then((thisProject) => {
-            this.project = thisProject;
+    let platforms = [
+        new HostPlatform(),
+        new AndroidPlatform()
+    ]
 
-            if (this.project.root.equals(project.root)) {
-                throw Error(`The Dependency ${this.name} is not a raft dependency`);
-            }
+    for (let architecture of supportedArchitectures) {
+        let foundPlatform = platforms.find(p => p.name.toUpperCase() === architecture.platform.toUpperCase());
 
-            var dependencies = this.project.dependencies().map(dependency => createDependency(dependency, this.project.raftDir));
-            return Promise.all(dependencies.map((dependency) => dependency.download(project, build)));
+        if (!foundPlatform) {
+            throwConfigurationError(`unrecognized platform ${architecture.platform}`);
+        }
+
+        let foundArchitecture = foundPlatform
+            .getArchitectures()
+            .find(arch => arch.name.toUpperCase() === architecture.architecture.toUpperCase());
+
+        if (!foundArchitecture) {
+            throwConfigurationError(`unrecognized architecture ${architecture.architecture} for platform ${architecture.platform}`);
+        }
+
+        supported.push({
+            architecture: foundArchitecture,
+            platform: foundPlatform
         });
     }
 
-    /**
-     * @see Dependency.buildInstall
-     */
-    async buildInstall(project : Project, build : Build) : Promise<any> {
-        var buildPath = project.dirForDependencyBuild(this.name, build);
-        var dependencies = this.project.dependencies().map(dependency => createDependency(dependency, this.project.raftDir));
+    if (supported.length === 0) {
+        let platform = platforms[0];
+        supported.push({platform, architecture: platform.getDefaultArchitecture()});
+    }
 
-        await Promise.all(dependencies.map(dependency => dependency.buildInstall(project, build)));
-
-        var options = this.project.cmakeOptions(project, build);
-        
-        await CMake.configure(this.project.root, buildPath, options);
-        await CMake.build(buildPath);
-        await CMake.install(buildPath);
-    };
+    return supported;
 }

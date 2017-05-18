@@ -7,8 +7,8 @@ import * as mustache from 'gulp-mustache';
 
 import * as rimraf from 'rimraf';
 
-import {Path} from './path';
-import {Repository} from './vcs';
+import {Path} from './core/path';
+import {Repository} from './core/vcs';
 
 interface ParsedPath {
     dirname?: string;

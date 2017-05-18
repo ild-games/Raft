@@ -94,7 +94,7 @@ export class CMakeDependency extends RepositoryDependency {
         var cmakeOptions = CMake.CMakeOptions
             .create(installLocation)
             .isReleaseBuild(build.releaseBuild)
-            .platform(build.platform)
+            .architecture(build.architecture)
             .configOptions(this.descriptor.configOptions);
 
         await CMake.configure(sourceLocation, buildLocation, cmakeOptions)
@@ -119,4 +119,54 @@ export function getDependency(project : Project, build : Build, dependency : Dep
     }).then(() => {
         raftlog(dependency.name, "Ready");
     });
+}
+
+/**
+ * A dependency that uses Raft for managing its own dependencies.
+ */
+export class RaftDependency extends RepositoryDependency {
+
+    constructor(public descriptor : DependencyDescriptor,
+                public repository : Repository,
+                public patches : Path [],
+                private _createDependency : (descriptor : DependencyDescriptor, raftDir : Path) => Dependency) {
+        super(descriptor, repository, patches);
+    }
+
+    private project : Project;
+
+    /**
+     * @see Dependency.download
+     */
+    download(project : Project, build : Build) : Promise<any> {
+        var buildLocation = project.dirForDependency(this.name);
+        return super.download(project, build)
+        .then(() => Project.find(buildLocation))
+        .then((thisProject) => {
+            this.project = thisProject;
+
+            if (this.project.root.equals(project.root)) {
+                throw Error(`The Dependency ${this.name} is not a raft dependency`);
+            }
+
+            var dependencies = this.project.dependencies().map(dependency => this._createDependency(dependency, this.project.raftDir));
+            return Promise.all(dependencies.map((dependency) => dependency.download(project, build)));
+        });
+    }
+
+    /**
+     * @see Dependency.buildInstall
+     */
+    async buildInstall(project : Project, build : Build) : Promise<any> {
+        var buildPath = project.dirForDependencyBuild(this.name, build);
+        var dependencies = this.project.dependencies().map(dependency => this._createDependency(dependency, this.project.raftDir));
+
+        await Promise.all(dependencies.map(dependency => dependency.buildInstall(project, build)));
+
+        var options = this.project.cmakeOptions(project, build);
+
+        await CMake.configure(this.project.root, buildPath, options);
+        await CMake.build(buildPath);
+        await CMake.install(buildPath);
+    };
 }

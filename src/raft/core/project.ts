@@ -2,7 +2,7 @@
 import * as _ from 'underscore';
 
 import * as CMake from './cmake';
-import {DependencyDescriptor, RaftfileRoot} from './raft-file-descriptor';
+import {ArchitectureDescriptor, DependencyDescriptor, RaftfileRoot} from './raft-file-descriptor';
 import {Build, Platform, Architecture} from './build-config';
 import {raftlog} from './log';
 import {Path} from './path';
@@ -61,11 +61,22 @@ export class Project {
     }
 
     /**
-     * Get the dependency descriptor's contained in the project's raftfile.
+     * Get the dependency descriptors contained in the project's raftfile.
      * @return {RaftFile.DependencyDescriptor} The raw dependencies available in the raft file.
      */
     dependencies() : DependencyDescriptor [] {
-        return this.raftfile.dependencies.slice(0);
+        return [...this.raftfile.dependencies];
+    }
+
+    /**
+     * Get the architecture descriptors from the project's raftfile.
+     * @return Array of architectures the project supports.
+     */
+    architectures() : ArchitectureDescriptor [] {
+        if (!this.raftfile.architectures) {
+            return [];
+        }
+        return [...this.raftfile.architectures];
     }
 
     /**
@@ -86,8 +97,9 @@ export class Project {
     dirForDependencyBuild(name : string, build : Build) {
         return this.root.append(
             Project.DEPENDENCY_BUILD_DIR,
-            Platform[build.platform],
-            Architecture[build.architecture],
+            build.platform.name,
+            build.architecture.name,
+            this._getBuildType(build),
             name);
     }
 
@@ -99,8 +111,9 @@ export class Project {
     dirForDependencyInstall(build :Build) {
         return this.root.append(
             Project.DEPENDENCY_INSTALL_DIR,
-            Platform[build.platform],
-            Architecture[build.architecture]);
+            build.platform.name,
+            build.architecture.name,
+            this._getBuildType(build));
     }
 
     /**
@@ -173,13 +186,17 @@ export class Project {
             .raftIncludeDir(rootProject.dirForDependencyInc(build))
             .raftLibDir(rootProject.dirForDependencyLib(build))
             .raftFrameworkDir(rootProject.dirForDependencyFramework(build))
-            .platform(build.platform);
+            .architecture(build.architecture);
     }
 
     /**
      * Root directory of the project.
      */
     root : Path;
+
+    private _getBuildType(build : Build) {
+        return build.releaseBuild ? "Release" : "Debug";
+    }
 
     get raftDir() {
         return this.root.append("Raft");

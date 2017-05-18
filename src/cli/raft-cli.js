@@ -14,8 +14,9 @@ var argv = yargs
         var argv = yargs
             .usage('Usage: $0 build [options]')
             .alias('p', 'platform')
-            .describe('p', 'The platform that will be targed by the build. Defaults to Host.')
-            .choices('p', ['Host', 'Android'])
+            .describe('p', 'The platform that will be targeted by the build. Defaults to the first platform listed in the raftfile.')
+            .alias('a', 'architecture')
+            .describe('a', 'The architecture that will be targeted by the build. Defaults to the first architecture listed for the platform in the raftfile.')
             .boolean('r')
             .alias('r', 'release')
             .describe('r', 'Build release binaries instead of debug binaries')

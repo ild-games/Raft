@@ -4,15 +4,17 @@ import * as _ from 'underscore';
 import * as Promptly from 'promptly';
 import * as colors from 'colors';
 
-import {parseBuildConfig} from './build-config';
-import {getDependency} from './dependency';
-import {beforeBuild} from './hooks'
-import {raftlog} from './log';
-import {Path} from './path';
-import {Project} from './project';
+import {Build, Platform} from './core/build-config';
+import {getDependency} from './core/dependency';
+import {raftlog} from './core/log';
+import {Path} from './core/path';
+import {Project} from './core/project';
 import {instantiateTemplate} from './template';
-import {createDependency} from './raft-file-parser';
+import {createDependency, getSupportedArchitectures} from './raft-file-parser';
+import {throwCommandLineError} from './core/error';
 
+import {HostPlatform} from './platform/host';
+import {AndroidPlatform} from './platform/android';
 
 /**
  * Build the raft project the user is currently in.
@@ -20,19 +22,32 @@ import {createDependency} from './raft-file-parser';
  * @return A promise that resolves once the build is finished.
  */
 export async function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
-    var buildSettings = parseBuildConfig(options.platform, options.architecture, options.release);
-
     let project = await Project.find(Path.cwd());
-    var dependencies = _.map(project.dependencies(), (dependency) => {
+
+    let dependencies = _.map(project.dependencies(), (dependency) => {
         return createDependency(dependency, project.raftDir);
     });
+
+    let architectures = getSupportedArchitectures(project.architectures())
+        .filter(arch => !options.platform|| options.platform.toUpperCase() === arch.platform.name.toUpperCase())
+        .filter(arch => !options.architecture || options.architecture.toUpperCase() === arch.architecture.name.toUpperCase());
+
+    if (architectures.length === 0) {
+        throwCommandLineError("No match for the provided architecture and platform");
+    }
+
+    let buildSettings = {
+        releaseBuild : !!options.release,
+        platform : architectures[0].platform,
+        architecture : architectures[0].architecture
+    }
 
     raftlog("Project", `Getting ${dependencies.length} for the project`);
 
     await Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)));
 
     raftlog("Project", `Running before build hooks`);
-    await beforeBuild(project, buildSettings);
+    await buildSettings.architecture.beforeBuild(project, buildSettings);
 
     raftlog("Project", `Running the build`);
     await project.build(buildSettings);

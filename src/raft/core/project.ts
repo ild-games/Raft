@@ -149,7 +149,7 @@ export class Project {
      * @return {Path}                    The directory the project should be built in.
      */
     dirForBuild(build : Build) {
-        return this.root.append(Project.BUILD_DIR);
+        return this.root.append(Project.BUILD_DIR, build.platform.name, build.architecture.name);
     }
 
     /**

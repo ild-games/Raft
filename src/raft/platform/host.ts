@@ -18,4 +18,11 @@ export class HostArchitecture extends Architecture {
             {name : RAFT_FLAGS.IS_ANDROID, value: RAFT_FLAGS.FALSE}
         ]
     }
+
+    getCMakeGeneratorTarget() : string {
+        //if (/^win/.test(process.platform)) {
+         //   return "MSYS Makefiles"
+        //}
+        return super.getCMakeGeneratorTarget();
+    }
 }

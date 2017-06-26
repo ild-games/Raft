@@ -57,7 +57,7 @@ export class GitRepository implements Repository {
     */
      patch(repoDirectory : Path, patch : Path) {
          if (repoDirectory.exists() && patch.exists()) {
-             return execute('git', ['apply', patch.toString()], {cwd : repoDirectory});
+             return execute('git', ['apply', '--ignore-whitespace', patch.toString()], {cwd : repoDirectory});
          }
          return Promise.reject({});
      }

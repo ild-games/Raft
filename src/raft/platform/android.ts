@@ -32,9 +32,9 @@ export class AndroidPlatform extends Platform {
     }
 }
 
-class AndroidArchitecture implements Architecture {
+class AndroidArchitecture extends Architecture {
     constructor(public name : string) {
-
+        super();
     }
 
     beforeBuild(project : Project, buildConfig : Build) : Promise<any> {

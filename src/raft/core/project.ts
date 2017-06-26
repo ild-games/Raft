@@ -157,13 +157,13 @@ export class Project {
      * @param  {Build} build The current build configuration.
      * @return {Promise<any>}            A promise that resolves when the build is finished.
      */
-    build(build : Build) : Promise<any> {
+    async build(build : Build) : Promise<any> {
         var buildPath = this.dirForBuild(build);
         var cmakeOptions = this.cmakeOptions(this, build)
-        return CMake.configure(this.root, buildPath, cmakeOptions)
-        .then(() => {
-            return CMake.build(buildPath);
-        });
+
+        let cmakeBuild = new CMake.CMakeBuild(buildPath, build);
+        await cmakeBuild.configure(this.root, cmakeOptions);
+        await cmakeBuild.build();
     }
 
     /**

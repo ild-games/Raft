@@ -36,7 +36,7 @@ export interface ExecuteOptions {
 export async function execute(command : string, args : string [], options? : ExecuteOptions) : Promise<ProcessOutput> {
     options = options || {};
     var directoryCreated : Promise<any>;
-    var nodeOptions : {cwd? : string} = {};
+    var nodeOptions : {cwd? : string, maxBuffer? : number} = {maxBuffer : 1024 * 1024 * 100};
     var wrappedArgs = args.map(arg => `"${arg}"`);
     var cmdStr = [command].concat(wrappedArgs).join(" ");
     var tag = options.tag || cmdStr;

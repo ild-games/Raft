@@ -1,7 +1,7 @@
 
 import * as _ from 'underscore';
 
-import * as CMake from './cmake';
+import {CMakeBuild, CMakeOptions} from './cmake';
 import {raftlog} from './log';
 import {DependencyDescriptor} from './raft-file-descriptor';
 import {Build} from './build-config';
@@ -91,15 +91,16 @@ export class CMakeDependency extends RepositoryDependency {
         var sourceLocation = project.dirForDependency(this.name);
         var buildLocation = project.dirForDependencyBuild(this.name, build);
         var installLocation = project.dirForDependencyInstall(build);
-        var cmakeOptions = CMake.CMakeOptions
+        var cmakeOptions = CMakeOptions
             .create(installLocation)
             .isReleaseBuild(build.releaseBuild)
             .architecture(build.architecture)
             .configOptions(this.descriptor.configOptions);
 
-        await CMake.configure(sourceLocation, buildLocation, cmakeOptions)
-        await CMake.build(buildLocation);
-        await CMake.install(buildLocation);
+        let cmakeBuild = new CMakeBuild(buildLocation, build);
+        await cmakeBuild.configure(sourceLocation, cmakeOptions);
+        await cmakeBuild.build();
+        await cmakeBuild.install();
     }
 }
 
@@ -164,9 +165,11 @@ export class RaftDependency extends RepositoryDependency {
         await Promise.all(dependencies.map(dependency => dependency.buildInstall(project, build)));
 
         var options = this.project.cmakeOptions(project, build);
+        options =  options.configOptions(this.descriptor.configOptions || []);
+        let cmakeBuild = new CMakeBuild(buildPath, build);
 
-        await CMake.configure(this.project.root, buildPath, options);
-        await CMake.build(buildPath);
-        await CMake.install(buildPath);
+        await cmakeBuild.configure(this.project.root, options);
+        await cmakeBuild.build();
+        await cmakeBuild.install();
     };
 }

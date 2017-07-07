@@ -16,7 +16,7 @@ export interface Build {
  * For example Android is a platform and armabi is an architecture.
  */
 export abstract class Platform {
-    name : string;
+    abstract name : string;
 
     abstract getArchitectures() : Architecture [];
 
@@ -38,5 +38,9 @@ export abstract class Architecture {
 
     getCMakeFlags() : Flag[] {
         return [];
+    }
+
+    getCMakeGeneratorTarget() : string | null {
+        return null;
     }
 }

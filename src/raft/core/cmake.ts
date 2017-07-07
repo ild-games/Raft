@@ -1,7 +1,7 @@
 import * as _ from 'underscore';
 
 import {Path} from './path';
-import {Architecture} from './build-config';
+import {Architecture, Build} from './build-config';
 import {execute, ProcessOutput} from './system';
 import {Flag, RAFT_FLAGS} from './flags';
 
@@ -19,20 +19,50 @@ const CMAKE_TOOLCHAIN = "CMAKE_TOOLCHAIN_FILE";
 //Raft CMake Options
 const RAFT = "RAFT";
 
-/**
-* Configure a cmake project.
-* @param  {Path}          srcPath   Root of the cmake project.
-* @param  {Path}          buildPath Directory the configuration was stored in.
-* @param  {CMakeOptions}  options   The options that will be used for the build.
-* @return {Promise<any>}            Promise that resolves once the cmake configuration is complete.
-*/
-export function configure(
-    srcPath : Path,
-    buildPath : Path,
-    options : CMakeOptions) : Promise<any> {
+export class CMakeBuild {
+    /*
+    * Create an object that controls a CMakeBuild
+    * @param  {Path}          buildPath Directory the configuration was stored in.
+    */
+    constructor(private _buildPath : Path, private _buildConfig : Build) {
 
-        return execute("cmake", [srcPath.toString()].concat(options.toArray()), {cwd : buildPath});
+    }
+
+    /**
+    * Configure a cmake project.
+    * @param  {Path}          srcPath   Root of the cmake project.
+    * @param  {CMakeOptions}  options   The options that will be used for the build.
+    * @return {Promise<any>}            Promise that resolves once the cmake configuration is complete.
+    */
+    configure(sourcePath : Path, options : CMakeOptions) : Promise<any> {
+        let cmdOptions = [sourcePath.toString()].concat(options.toArray());
+        if (this._buildConfig.architecture.getCMakeGeneratorTarget()) {
+            cmdOptions = ['-G', this._buildConfig.architecture.getCMakeGeneratorTarget(), ...cmdOptions];
+        }
+        return execute("cmake", cmdOptions, {cwd : this._buildPath});
+    }
+
+    /**
+    * Build the cmake project that was configured into the build path.
+    * @param  {Path}   buildPath Path the cmake project was configured into.
+    * @return {Promise<any>}     Promise that resolves once the build is finished.
+    */
+    build() : Promise<ProcessOutput> {
+        let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
+        return execute(`cmake `, [`--build`, this._buildPath.toString(), '--config', type]);
+    }
+
+    /**
+    * Install a built cmake project.
+    * @param  {Path}   buildPath Location of a built cmake project.
+    * @return {Promise<any>}     Promise that resolves once the install is completed.
+    */
+    install() : Promise<ProcessOutput> {
+        let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
+        return execute(`cmake`, [`--build`, this._buildPath.toString(), `--config`, type, `--target`, `install`], {cwd : this._buildPath});
+    }
 }
+
 
 /**
 * Used for specifying the configuration of a CMake build. This class implements
@@ -144,24 +174,6 @@ export class CMakeOptions {
         result.options = _.clone(this.options);
         return result;
     }
-}
-
-/**
-* Build the cmake project that was configured into the build path.
-* @param  {Path}   buildPath Path the cmake project was configured into.
-* @return {Promise<any>}     Promise that resolves once the build is finished.
-*/
-export function build(buildPath : Path) : Promise<ProcessOutput> {
-    return execute(`make`, [`-j8`], {cwd : buildPath});
-}
-
-/**
-* Install a built cmake project.
-* @param  {Path}   buildPath Location of a built cmake project.
-* @return {Promise<any>}     Promise that resolves once the install is completed.
-*/
-export function install(buildPath : Path) : Promise<ProcessOutput> {
-    return execute(`make`, [`install`], {cwd : buildPath});
 }
 
 /**

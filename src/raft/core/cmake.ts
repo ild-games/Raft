@@ -49,7 +49,7 @@ export class CMakeBuild {
     */
     build() : Promise<ProcessOutput> {
         let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
-        return execute(`cmake `, [`--build`, this._buildPath.toString(), '--config', type]);
+        return execute(`cmake `, [`--build`, this._buildPath.toString(), '--config', type, '--', '-j8']);
     }
 
     /**

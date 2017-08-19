@@ -14,7 +14,6 @@ import {createDependency, getSupportedArchitectures} from './raft-file-parser';
 import {throwCommandLineError} from './core/error';
 
 import {HostPlatform} from './platform/host';
-import {AndroidPlatform} from './platform/android';
 
 /**
  * Build the raft project the user is currently in.

@@ -11,6 +11,7 @@ import {Repository, GitRepository} from './core/vcs';
 import {throwConfigurationError} from './core/error';
 
 import {AndroidPlatform} from './platform/android';
+import {iOSPlatform} from './platform/iOS';
 import {HostPlatform} from './platform/host';
 
 
@@ -65,7 +66,8 @@ export function getSupportedArchitectures(supportedArchitectures : ArchitectureD
 
     let platforms = [
         new HostPlatform(),
-        new AndroidPlatform()
+        new AndroidPlatform(),
+        new iOSPlatform()
     ]
 
     for (let architecture of supportedArchitectures) {

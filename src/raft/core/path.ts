@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as npath from 'path';
 import * as mkdirp from 'mkdirp';
 import * as _ from 'underscore';
+import * as rimraf from 'rimraf';
 
 import * as os from 'os';
 
@@ -113,6 +114,20 @@ export class Path {
     }
 
     /**
+     * Delete the given file described by the path. 
+     * @param  path Path to delete.
+     * @return A promise that resolves when the deletion is complete.
+     */
+    delete() : Promise<any> {
+        return new Promise((resolve, reject) => {
+            rimraf(this.toString(), function (error) {
+                if (error) { reject(error); }
+                else { resolve(); }
+            });
+        });
+    }
+
+    /**
      * Get the path for the current working directory.
      * @return {Path} A new path describing the working directory.
      */
@@ -136,5 +151,4 @@ export class Path {
     static folderSeparator() : string {
         return npath.sep;
     }
-
 }

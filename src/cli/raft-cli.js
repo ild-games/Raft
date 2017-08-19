@@ -34,6 +34,12 @@ var argv = yargs
         checkCommands(yargs, argv, 1);
         Raft.Action.create(argv.template).catch(reportError);
     })
+    .command('clean', 'Clean the build and include folders of project and dependencies', function(yargs) {
+        var argv = yargs
+            .usage('Usage: $0 clean')
+            .argv;
+        Raft.Action.clean().catch(reportError);
+    })
     .argv;
 
 checkCommands(yargs, argv, 1);

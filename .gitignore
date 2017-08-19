@@ -3,3 +3,4 @@ node_modules/
 release/
 tsd/typings/
 *.swp
+**/*.DS_Store

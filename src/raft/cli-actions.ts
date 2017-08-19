@@ -61,13 +61,13 @@ export async function build(options : {platform? : string, architecture? : strin
  * @return {Promise<any>}        A promise that resolves when the new template instance is ready.
  */
 export function create(templateType : string) : Promise<any> {
-    var templateDir = Path.home().append('.raft/templates/' + templateType + '/');
+    let templateDir = Path.home().append('.raft/templates/' + templateType + '/');
     if (!templateDir.append('index.js').exists()) {
         throw new Error(errorMessage("No index.js at " + templateDir));
     }
 
-    var templateSetup = require(templateDir.toString());
-    var templateArgs = {
+    let templateSetup = require(templateDir.toString());
+    let templateArgs = {
         Promise: Promise,
         Path: Path,
         prompt: {
@@ -80,8 +80,25 @@ export function create(templateType : string) : Promise<any> {
     });
 };
 
+export async function clean() : Promise<any> {
+    let project = await Project.find(Path.cwd(), true);
+    if (!project) {
+        throw new Error(errorMessage("You must be in a Raft project folder"));
+    }
+
+    project.clean().then(() => {
+        console.log(successMessage("Build and install folders have been deleted"));
+    }).catch((err) => {
+        throw new Error(errorMessage(err));
+    });
+}
+
 function errorMessage(msg : string) : string {
     return colors.red.underline("Error") + ": " + msg;
+}
+
+function successMessage(msg : string) : string {
+    return colors.green.underline("Success") + ": " + msg;
 }
 
 function ask(question : string, validatorFunction? : (input : string) => string) : Promise<any> {

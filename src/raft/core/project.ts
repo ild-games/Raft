@@ -29,17 +29,17 @@ export class Project {
     }
 
     /**
-    *  Will walk up the file tree until the root directory of a project is found.
-    *  @param path The path to start the search from
-    *  @return Returns the project if it exists or null if it does not.
-    */
-    static find(path : Path) : Promise<Project> {
-        var raftDir = new Path("Raft");
-        var currentPath = path;
+     *  Will walk up the file tree until the root directory of a project is found.
+     *  @param path The path to start the search from
+     *  @return Returns the project if it exists or null if it does not.
+     */
+    static find(path : Path, suppressLog : boolean = false) : Promise<Project> {
+        let raftDir = new Path("Raft");
+        let currentPath = path;
 
         while (!currentPath.isRoot()) {
             if (currentPath.append(raftDir).exists()) {
-                return (new Project(currentPath)).load();
+                return (new Project(currentPath)).load(suppressLog);
             }
             currentPath = currentPath.parent();
         }
@@ -48,13 +48,27 @@ export class Project {
     }
 
     /**
+     *  Clean the build and install directories for the project
+     *  @return Returns a promise when the clean process is complete
+     */
+    clean() : Promise<any> {
+        return Promise.all([
+            Project.BUILD_DIR.delete(),
+            Project.DEPENDENCY_BUILD_DIR.delete(),
+            Project.DEPENDENCY_LIB_DIR.delete(),
+        ]);
+    }
+
+    /**
      * Load a project from the raftfile.
      * @return {Promise<Project>} A promise that resolves to a loaded project.
      */
-    load() : Promise<Project> {
+    load(suppressLog : boolean = false) : Promise<Project> {
         return this.root.append(Project.RAFT_FILE).read()
         .then((data) => {
-            raftlog("Project Data", data);
+            if (!suppressLog) {
+                raftlog("Project Data", data);
+            }
             this.raftfile = JSON.parse(data);
             return this;
         });

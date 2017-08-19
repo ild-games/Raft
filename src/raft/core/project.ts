@@ -55,7 +55,7 @@ export class Project {
         return Promise.all([
             Project.BUILD_DIR.delete(),
             Project.DEPENDENCY_BUILD_DIR.delete(),
-            Project.DEPENDENCY_LIB_DIR.delete(),
+            Project.DEPENDENCY_INSTALL_DIR.delete(),
         ]);
     }
 

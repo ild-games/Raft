@@ -4,5 +4,5 @@
  * @param  {string} message Information that needs to be communicated.
  */
 export function raftlog(tag: string, message : string) {
-    console.log(`${tag}:: ${message}\n\n`);
+    console.log(`${tag}:: ${message}`);
 }

@@ -7,7 +7,11 @@ export class iOSPlatform extends Platform {
 
     getArchitectures() : iOSArchitecture[] {
         return [
-            "armeabi"
+            "i386",
+            "x86_64",
+            "armv7",
+            "armv7s",
+            "arm64"
         ].map(name => new iOSArchitecture(name));
     }
 }
@@ -22,12 +26,34 @@ class iOSArchitecture extends Architecture {
             {name : RAFT_FLAGS.IS_DESKTOP, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_ANDROID, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.TRUE},
-            {name : RAFT_FLAGS.CMAKE_TOOLCHAIN, value: raftiOSToolchainFile().toString()},
+            {name : RAFT_FLAGS.CMAKE_TOOLCHAIN, value: raftiOSToolchainFile().toString()}
         ]
+    }
+
+    buildOptions() : string[] {
+        return [
+            '-sdk',
+            this._getSDKType(),
+            '-arch',
+            this.name
+        ];
     }
 
     getCMakeGeneratorTarget() : string | null {
         return "Xcode";
+    }
+
+    private _getSDKType() : string {
+        switch (this.name) {
+            case "i386":
+            case "x86_64":
+                return "iphonesimulator";
+            case "armv7":
+            case "armv7s":
+            case "arm64":
+            default:
+                return "iphoneos";
+        }
     }
 }
 

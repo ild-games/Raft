@@ -36,6 +36,10 @@ export abstract class Architecture {
         return Promise.resolve();
     }
 
+    buildOptions() : string[] {
+        return [];
+    }
+
     getCMakeFlags() : Flag[] {
         return [];
     }

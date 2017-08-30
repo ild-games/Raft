@@ -42,11 +42,6 @@ export async function build(options : {platform? : string, architecture? : strin
     }
 
     raftlog("Project", `Getting ${dependencies.length} for the project`);
-
-    //for (let dependency of dependencies) {
-    //    await getDependency(project, buildSettings, dependency);
-    //}
-    // DEBUG DELETE ABOVE FOR LOOP AND UNCOMMENT NEXT LINE
     await Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)));
 
     raftlog("Project", `Running before build hooks`);

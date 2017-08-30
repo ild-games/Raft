@@ -49,16 +49,21 @@ export class CMakeBuild {
     build() : Promise<ProcessOutput> {
         let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
         let buildOptions = this._buildConfig.architecture.buildOptions();
-        return execute(
-            `cmake `, 
+        let cmakeOptions = 
             [
                 `--build`, 
                 this._buildPath.toString(), 
                 '--config', 
-                type,
-                buildOptions.length > 0 ? '--' : '',
-                ...buildOptions, 
-            ]);
+                type
+            ];
+        if (buildOptions.length > 0) {
+            cmakeOptions = [
+                ...cmakeOptions,
+                '--',
+                ...buildOptions
+            ];
+        }
+        return execute('cmake', cmakeOptions);
     }
 
     /**
@@ -68,19 +73,23 @@ export class CMakeBuild {
     install() : Promise<ProcessOutput> {
         let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
         let buildOptions = this._buildConfig.architecture.buildOptions();
-        return execute(
-            'cmake', 
+        let cmakeOptions = 
             [
-                '--build', 
-                this._buildPath.toString(),
+                `--build`, 
+                this._buildPath.toString(), 
                 '--config', 
-                type, 
+                type,
                 '--target', 
-                'install',
-                buildOptions.length > 0 ? '--' : '',
-                ...buildOptions, 
-            ], 
-            {cwd : this._buildPath});
+                'install'
+            ];
+        if (buildOptions.length > 0) {
+            cmakeOptions = [
+                ...cmakeOptions,
+                '--',
+                ...buildOptions
+            ];
+        }
+        return execute('cmake', cmakeOptions, {cwd: this._buildPath});
     }
 }
 

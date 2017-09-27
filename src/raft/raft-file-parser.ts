@@ -12,6 +12,7 @@ import {throwConfigurationError} from './core/error';
 
 import {AndroidPlatform} from './platform/android';
 import {iOSPlatform} from './platform/iOS';
+import {macOSPlatform} from './platform/macOS';
 import {HostPlatform} from './platform/host';
 
 
@@ -67,7 +68,8 @@ export function getSupportedArchitectures(supportedArchitectures : ArchitectureD
     let platforms = [
         new HostPlatform(),
         new AndroidPlatform(),
-        new iOSPlatform()
+        new iOSPlatform(),
+        new macOSPlatform()
     ]
 
     for (let architecture of supportedArchitectures) {

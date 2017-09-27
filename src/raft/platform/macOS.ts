@@ -16,6 +16,7 @@ class macOSArchitecture extends Architecture {
     getCMakeFlags() : Flag[] {
         return [
             {name : RAFT_FLAGS.IS_DESKTOP, value: RAFT_FLAGS.TRUE},
+            {name : RAFT_FLAGS.IS_MACOS, value: RAFT_FLAGS.TRUE},
             {name : RAFT_FLAGS.IS_ANDROID, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.FALSE},
         ]

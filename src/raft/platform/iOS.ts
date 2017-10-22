@@ -27,6 +27,7 @@ class iOSArchitecture extends Architecture {
             {name : RAFT_FLAGS.IS_MACOS, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_ANDROID, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.TRUE},
+            {name : RAFT_FLAGS.ARCH, value: this.name},
             {name : RAFT_FLAGS.CMAKE_TOOLCHAIN, value: raftiOSToolchainFile().toString()}
         ]
     }

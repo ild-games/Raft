@@ -18,8 +18,8 @@ export const RAFT_FLAGS = {
     IS_MACOS: "RAFT_IS_MACOS",
     IS_ANDROID : "RAFT_IS_ANDROID",
     IS_IOS: "RAFT_IS_IOS",
+    ARCH: "RAFT_ARCH",
     CMAKE_TOOLCHAIN : "CMAKE_TOOLCHAIN_FILE",
-
     TRUE : "true",
     FALSE : "false"
 }

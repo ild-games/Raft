@@ -44,22 +44,52 @@ export class CMakeBuild {
 
     /**
     * Build the cmake project that was configured into the build path.
-    * @param  {Path}   buildPath Path the cmake project was configured into.
     * @return {Promise<any>}     Promise that resolves once the build is finished.
     */
     build() : Promise<ProcessOutput> {
         let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
-        return execute(`cmake `, [`--build`, this._buildPath.toString(), '--config', type]);
+        let buildOptions = this._buildConfig.architecture.buildOptions();
+        let cmakeOptions = 
+            [
+                `--build`, 
+                this._buildPath.toString(), 
+                '--config', 
+                type
+            ];
+        if (buildOptions.length > 0) {
+            cmakeOptions = [
+                ...cmakeOptions,
+                '--',
+                ...buildOptions
+            ];
+        }
+        return execute('cmake', cmakeOptions);
     }
 
     /**
     * Install a built cmake project.
-    * @param  {Path}   buildPath Location of a built cmake project.
     * @return {Promise<any>}     Promise that resolves once the install is completed.
     */
     install() : Promise<ProcessOutput> {
         let type = this._buildConfig.releaseBuild ? 'Release' : 'Debug';
-        return execute(`cmake`, [`--build`, this._buildPath.toString(), `--config`, type, `--target`, `install`], {cwd : this._buildPath});
+        let buildOptions = this._buildConfig.architecture.buildOptions();
+        let cmakeOptions = 
+            [
+                `--build`, 
+                this._buildPath.toString(), 
+                '--config', 
+                type,
+                '--target', 
+                'install'
+            ];
+        if (buildOptions.length > 0) {
+            cmakeOptions = [
+                ...cmakeOptions,
+                '--',
+                ...buildOptions
+            ];
+        }
+        return execute('cmake', cmakeOptions, {cwd: this._buildPath});
     }
 }
 

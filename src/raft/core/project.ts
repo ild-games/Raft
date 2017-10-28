@@ -172,8 +172,8 @@ export class Project {
      * @return {Promise<any>}            A promise that resolves when the build is finished.
      */
     async build(build : Build) : Promise<any> {
-        var buildPath = this.dirForBuild(build);
-        var cmakeOptions = this.cmakeOptions(this, build)
+        let buildPath = this.dirForBuild(build);
+        let cmakeOptions = this.cmakeOptions(this, build)
 
         let cmakeBuild = new CMake.CMakeBuild(buildPath, build);
         await cmakeBuild.configure(this.root, cmakeOptions);
@@ -187,7 +187,7 @@ export class Project {
      * @return {object}                        CMake options that should be used for the build.
      */
     cmakeOptions(rootProject : Project, build : Build) : CMake.CMakeOptions {
-        var installPath : Path;
+        let installPath : Path;
         if (this === rootProject) {
             installPath = this.root.append("install");
         } else {

@@ -14,7 +14,6 @@ import {createDependency, getSupportedArchitectures} from './raft-file-parser';
 import {throwCommandLineError} from './core/error';
 
 import {HostPlatform} from './platform/host';
-import {AndroidPlatform} from './platform/android';
 
 /**
  * Build the raft project the user is currently in.
@@ -43,7 +42,6 @@ export async function build(options : {platform? : string, architecture? : strin
     }
 
     raftlog("Project", `Getting ${dependencies.length} for the project`);
-
     await Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)));
 
     raftlog("Project", `Running before build hooks`);

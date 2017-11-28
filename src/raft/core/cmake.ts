@@ -40,6 +40,7 @@ export class CMakeBuild {
         if (this._buildConfig.architecture.getCMakeGeneratorTarget()) {
             cmdOptions = ['-G', this._buildConfig.architecture.getCMakeGeneratorTarget(), ...cmdOptions];
         }
+        cmdOptions = [...this.platformSpecificConfigureOptions(), ...cmdOptions];
         return execute("cmake", cmdOptions, {cwd : this._buildPath});
     }
 
@@ -57,6 +58,7 @@ export class CMakeBuild {
                 '--config', 
                 type
             ];
+        buildOptions = [...this.platformSpecificBuildOptions(), ...buildOptions];
         if (buildOptions.length > 0) {
             cmakeOptions = [
                 ...cmakeOptions,
@@ -91,6 +93,28 @@ export class CMakeBuild {
             ];
         }
         return execute('cmake', cmakeOptions, {cwd: this._buildPath});
+    }
+
+    private platformSpecificConfigureOptions() : string[] {
+        let platform = os.platform();
+        let options : string[] = [];
+
+        if (platform === "win32") {
+            options.push('-DCMAKE_CXX_FLAGS=-MP');
+        }
+
+        return options;
+    }
+
+    private platformSpecificBuildOptions() : string[] {
+        let platform = os.platform();
+        let options : string[] = [];
+
+        if (platform === "linux" || platform === "darwin") {
+            options.push('-j12');
+        }
+
+        return options;
     }
 }
 

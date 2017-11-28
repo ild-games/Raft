@@ -21,4 +21,8 @@ export class HostArchitecture extends Architecture {
             {name : RAFT_FLAGS.ARCH, value: this.name}
         ]
     }
+
+    getCMakeGeneratorTarget() : string | null {
+        return 'Ninja';
+    }
 }

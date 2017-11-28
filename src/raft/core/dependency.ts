@@ -1,5 +1,5 @@
-
 import * as _ from 'underscore';
+import * as colors from 'colors';
 
 import {CMakeBuild, CMakeOptions} from './cmake';
 import {raftlog} from './log';
@@ -112,13 +112,14 @@ export class CMakeDependency extends RepositoryDependency {
  * @return A promise that resolves once the dependency is ready for use.
  */
 export function getDependency(project : Project, build : Build, dependency : Dependency) {
-    raftlog(dependency.name, "Downloading");
+    let dependencyTagColorFunc = colors.bgCyan.bold;
+    raftlog(dependency.name, "Downloading", dependencyTagColorFunc);
     return dependency.download(project, build)
     .then(() => {
-        raftlog(dependency.name, "Building");
+        raftlog(dependency.name, "Building", dependencyTagColorFunc);
         return dependency.buildInstall(project, build);
     }).then(() => {
-        raftlog(dependency.name, "Ready");
+        raftlog(dependency.name, "Ready", dependencyTagColorFunc);
     });
 }
 

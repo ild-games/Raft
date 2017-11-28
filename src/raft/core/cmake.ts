@@ -1,4 +1,5 @@
 import * as _ from 'underscore';
+import * as os from 'os';
 
 import {Path} from './path';
 import {Architecture, Build} from './build-config';

@@ -1,3 +1,4 @@
+import * as colors from 'colors';
 import * as child_process from 'child_process';
 import * as _ from 'underscore';
 
@@ -21,9 +22,9 @@ export interface ExecuteOptions {
     cwd? : Path,
 
     /**
-    * The tag to use when logging events.
+    * The message to use when logging events.
     */
-    tag? : string
+    message? : string
 }
 
 /**
@@ -35,32 +36,32 @@ export interface ExecuteOptions {
  */
 export async function execute(command : string, args : string [], options? : ExecuteOptions) : Promise<ProcessOutput> {
     options = options || {};
-    var directoryCreated : Promise<any>;
-    var nodeOptions : {cwd? : string, maxBuffer? : number} = {maxBuffer : 1024 * 1024 * 100};
-    var wrappedArgs = args.map(arg => `"${arg}"`);
-    var cmdStr = [command].concat(wrappedArgs).join(" ");
-    var tag = options.tag || cmdStr;
+    let directoryCreated : Promise<any>;
+    let nodeOptions : {cwd? : string, maxBuffer? : number} = {maxBuffer : 1024 * 1024 * 100};
+    let wrappedArgs = args.map(arg => `"${arg}"`);
+    let cmdStr = [command].concat(wrappedArgs).join(" ");
+    let message = options.message || cmdStr;
 
     if (options.cwd) {
-        raftlog(tag, `Running in ${options.cwd.toString()}`);
+        raftlog(`Running in ${options.cwd.toString()}`, message, colors.bgGreen.bold);
         nodeOptions.cwd = options.cwd.toString();
         //Create the working directory if it does not exist.
         await options.cwd.createDirectory().then((created) => {
             if (created) {
-                raftlog(tag, `Created ${options.cwd.toString()}`);
+                raftlog(`Created ${options.cwd.toString()}`, message, colors.bgGreen.bold);
             }
         });
     } else {
-        raftlog(tag, "Running in the current working directory");
+        raftlog("Running in the current working directory", message, colors.bgGreen.bold);
     }
 
     return new Promise<ProcessOutput>(function (resolve, reject) {
         child_process.exec(cmdStr, nodeOptions, function(error, buffers) {
             if (error) {
-                raftlog(tag, "Rejected with an error");
+                raftlog("Rejected with an error", message, colors.bgRed.bold);
                 reject(error);
             } else {
-                raftlog(tag, "Finished successfullly");
+                raftlog("Finished successfully", message, colors.bgGreen.bold);
                 resolve({ stdout : buffers[0], stderr : buffers[1]});
             }
         });

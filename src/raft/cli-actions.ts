@@ -21,6 +21,7 @@ import {HostPlatform} from './platform/host';
  * @return A promise that resolves once the build is finished.
  */
 export async function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
+    let startTime = process.hrtime();
     let project = await Project.find(Path.cwd());
 
     let dependencies = _.map(project.dependencies(), (dependency) => {
@@ -41,16 +42,20 @@ export async function build(options : {platform? : string, architecture? : strin
         architecture : architectures[0].architecture
     }
 
-    raftlog("Project", `Getting ${dependencies.length} for the project`);
+    let projectTagColorFunc = colors.bgBlue.bold;
+    raftlog("Project", `Getting ${dependencies.length} for the project`, projectTagColorFunc);
     await Promise.all(dependencies.map(dependency => getDependency(project, buildSettings, dependency)));
 
-    raftlog("Project", `Running before build hooks`);
+    raftlog("Project", `Running before build hooks`, projectTagColorFunc);
     await buildSettings.architecture.beforeBuild(project, buildSettings);
 
-    raftlog("Project", `Running the build`);
+    raftlog("Project", `Running the build`, projectTagColorFunc);
     await project.build(buildSettings);
 
-    raftlog("Project", `Exiting`);
+    raftlog("Project", `Exiting`, projectTagColorFunc);
+    let endTime = process.hrtime(startTime);
+    let endTimeInSeconds = ((endTime[0] * 1e9) + endTime[1]) / 1e9;
+    console.log(`Total time: ${endTimeInSeconds.toFixed(2)}s`);
 }
 
 /**

@@ -1,4 +1,4 @@
-
+import * as colors from 'colors';
 import * as _ from 'underscore';
 
 import * as CMake from './cmake';
@@ -67,7 +67,7 @@ export class Project {
         return this.root.append(Project.RAFT_FILE).read()
         .then((data) => {
             if (!suppressLog) {
-                raftlog("Project Data", data);
+                raftlog("Project Data", data, colors.bgBlue.bold);
             }
             this.raftfile = JSON.parse(data);
             return this;

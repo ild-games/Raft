@@ -110,7 +110,7 @@ export class CMakeBuild {
         let platform = os.platform();
         let options : string[] = [];
 
-        if (platform === "linux" || platform === "darwin") {
+        if ((platform === "linux" || platform === "darwin") && this._buildConfig.platform.name !== "iOS") {
             options.push('-j12');
         }
 

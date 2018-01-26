@@ -197,6 +197,7 @@ export class Project {
         return CMake.CMakeOptions
             .create(installPath)
             .isReleaseBuild(build.releaseBuild)
+            .isDistributableBuild(build.distributable)
             .raftIncludeDir(rootProject.dirForDependencyInc(build))
             .raftLibDir(rootProject.dirForDependencyLib(build))
             .raftFrameworkDir(rootProject.dirForDependencyFramework(build))

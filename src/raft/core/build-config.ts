@@ -8,6 +8,7 @@ export interface Build {
     platform : Platform;
     architecture : Architecture;
     releaseBuild : boolean;
+    distributable : boolean;
 }
 
 

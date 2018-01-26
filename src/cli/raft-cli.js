@@ -20,6 +20,8 @@ var argv = yargs
             .boolean('r')
             .alias('r', 'release')
             .describe('r', 'Build release binaries instead of debug binaries')
+            .alias('d', 'distribute')
+            .describe('d', 'Build for a distributable release')
             .argv;
         Raft.Action.build(argv).catch(reportError);
     })

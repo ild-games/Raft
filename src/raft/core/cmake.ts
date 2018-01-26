@@ -184,6 +184,17 @@ export class CMakeOptions {
     }
 
     /**
+     * Configure CMake as a distributable build or not
+     * @param  isRelease True if it is a distributable build. False if not.
+     * @return CMakeOptions with release or debug flags set.
+     */
+    isDistributableBuild(isDistributable : boolean) : CMakeOptions {
+        let copy = this.clone();
+        copy.options["RAFT_DISTRIBUTABLE"] = isDistributable ? RAFT_FLAGS.TRUE : RAFT_FLAGS.FALSE;
+        return copy;
+    }
+
+    /**
     * Configure platform specific build flags.
     * @param platform Platform that is being built.
     * @return CMakeOptions with platform specific flags set.

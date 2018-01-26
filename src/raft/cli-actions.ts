@@ -20,7 +20,7 @@ import {HostPlatform} from './platform/host';
  * @param  options Can be used to specify the parameters for the build configuration.
  * @return A promise that resolves once the build is finished.
  */
-export async function build(options : {platform? : string, architecture? : string, release? : boolean} = {}) : Promise<any> {
+export async function build(options : {platform? : string, architecture? : string, release? : boolean, distribute? : boolean} = {}) : Promise<any> {
     let startTime = process.hrtime();
     let project = await Project.find(Path.cwd());
 
@@ -39,7 +39,8 @@ export async function build(options : {platform? : string, architecture? : strin
     let buildSettings = {
         releaseBuild : !!options.release,
         platform : architectures[0].platform,
-        architecture : architectures[0].architecture
+        architecture : architectures[0].architecture,
+        distributable : options.distribute
     }
 
     let projectTagColorFunc = colors.bgBlue.bold;

@@ -11,7 +11,9 @@ export class iOSPlatform extends Platform {
             "x86_64",
             "armv7",
             "armv7s",
-            "arm64"
+            "arm64",
+            "all-os",
+            "all-sim"
         ].map(name => new iOSArchitecture(name));
     }
 }
@@ -33,12 +35,33 @@ class iOSArchitecture extends Architecture {
     }
 
     buildOptions() : string[] {
-        return [
+        let archs : string[];
+        if (this.name === "all-os") {
+            archs = [
+                '-arch',
+                'arm64',
+                '-arch',
+                'armv7'
+            ];
+        } else if (this.name === "all-sim") {
+            archs = [
+                '-arch',
+                'i386',
+                '-arch',
+                'x86_64'
+            ];
+        } else {
+            archs = [
+                '-arch',
+                this.name
+            ]
+        }
+        return archs.concat([
             '-sdk',
             this._getSDKType(),
-            '-arch',
-            this.name
-        ];
+            'BITCODE_GENERATION_MODE=bitcode',
+            'OTHER_CFLAGS=-fembed-bitcode'
+        ]);
     }
 
     getCMakeGeneratorTarget() : string | null {
@@ -49,10 +72,12 @@ class iOSArchitecture extends Architecture {
         switch (this.name) {
             case "i386":
             case "x86_64":
+            case "all-sim":
                 return "iphonesimulator";
             case "armv7":
             case "armv7s":
             case "arm64":
+            case "all-os":
             default:
                 return "iphoneos";
         }

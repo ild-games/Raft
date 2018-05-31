@@ -199,9 +199,9 @@ export class CMakeOptions {
     * @param platform Platform that is being built.
     * @return CMakeOptions with platform specific flags set.
     */
-    architecture(architecture : Architecture) : CMakeOptions {
+    architecture(architecture : Architecture, isRelease : boolean) : CMakeOptions {
         let result = this.clone();
-        for (let flag of architecture.getCMakeFlags()) {
+        for (let flag of architecture.getCMakeFlags(isRelease)) {
             result.options[flag.name] = flag.value;
         }
         return result;

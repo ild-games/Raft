@@ -95,7 +95,7 @@ export class CMakeDependency extends RepositoryDependency {
             .create(installLocation)
             .isReleaseBuild(build.releaseBuild)
             .isDistributableBuild(build.distributable)
-            .architecture(build.architecture)
+            .architecture(build.architecture, build.releaseBuild)
             .configOptions(this.descriptor.configOptions);
 
         let cmakeBuild = new CMakeBuild(buildLocation, build);

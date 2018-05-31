@@ -201,7 +201,7 @@ export class Project {
             .raftIncludeDir(rootProject.dirForDependencyInc(build))
             .raftLibDir(rootProject.dirForDependencyLib(build))
             .raftFrameworkDir(rootProject.dirForDependencyFramework(build))
-            .architecture(build.architecture);
+            .architecture(build.architecture, build.releaseBuild);
     }
 
     /**

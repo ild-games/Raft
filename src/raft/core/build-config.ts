@@ -41,7 +41,7 @@ export abstract class Architecture {
         return [];
     }
 
-    getCMakeFlags() : Flag[] {
+    getCMakeFlags(isRelease : boolean) : Flag[] {
         return [];
     }
 

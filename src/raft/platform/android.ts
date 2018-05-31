@@ -43,7 +43,7 @@ class AndroidArchitecture extends Architecture {
         return stlPath.copyTo(libPath.append(STL_LIB_NAME));
     }
 
-    getCMakeFlags() : Flag[]{
+    getCMakeFlags(isRelease : boolean) : Flag[]{
         return [
             {name : RAFT_FLAGS.IS_DESKTOP, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_MACOS, value: RAFT_FLAGS.FALSE},

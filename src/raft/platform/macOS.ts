@@ -13,7 +13,7 @@ export class macOSPlatform extends Platform {
 class macOSArchitecture extends Architecture {
     name : string = "Host";
 
-    getCMakeFlags() : Flag[] {
+    getCMakeFlags(isRelease : boolean) : Flag[] {
         return [
             {name : RAFT_FLAGS.IS_DESKTOP, value: RAFT_FLAGS.TRUE},
             {name : RAFT_FLAGS.IS_MACOS, value: RAFT_FLAGS.TRUE},

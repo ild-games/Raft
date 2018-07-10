@@ -7,6 +7,13 @@ import {Build, Platform, Architecture} from './build-config';
 import {raftlog} from './log';
 import {Path} from './path';
 
+export interface ExtensionBuild {
+    platform : String;
+    architecture : String;
+    releaseBuild : boolean;
+    distributable : boolean;
+}
+
 /**
  * Describes a raft project. Contains project data, configuration, and project specific paths.
  */
@@ -180,6 +187,19 @@ export class Project {
         await cmakeBuild.build();
     }
 
+    doesExtensionExist() : boolean {
+        return this._getExtensionDir().append("index.js").exists();
+    }
+
+    async extension(build : Build) {
+        let extensionDir = this._getExtensionDir();
+        if (!extensionDir.append('index.js').exists()) {
+            throw new Error('No index.js at ' + extensionDir);
+        }
+
+        require(extensionDir.toString())(this._getExtensionBuild(build));
+    }
+
     /**
      * Get the cmake options that should be used when building the project.
      * @param  {Project}           rootProject Root raft project for the current build.
@@ -213,7 +233,20 @@ export class Project {
         return build.releaseBuild ? "Release" : "Debug";
     }
 
-    get raftDir() {
+    private _getExtensionDir() : Path {
+        return this.raftDir.append("extension");
+    }
+
+    private _getExtensionBuild(build : Build) : ExtensionBuild {
+        return {
+            platform: build.platform.name,
+            architecture: build.architecture.name,
+            releaseBuild: build.releaseBuild,
+            distributable: build.distributable
+        };
+    }
+
+    get raftDir() : Path {
         return this.root.append("Raft");
     }
 }

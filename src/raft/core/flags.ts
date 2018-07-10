@@ -22,6 +22,5 @@ export const RAFT_FLAGS = {
     ARCH: "RAFT_ARCH",
     CMAKE_TOOLCHAIN : "CMAKE_TOOLCHAIN_FILE",
     TRUE : "true",
-    FALSE : "false",
-    XCODE_EXTLIB_SUBDIR: "RAFT_XCODE_EXTLIB_SUBDIR"
+    FALSE : "false"
 }

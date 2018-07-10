@@ -30,8 +30,7 @@ class iOSArchitecture extends Architecture {
             {name : RAFT_FLAGS.IS_ANDROID, value: RAFT_FLAGS.FALSE},
             {name : RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.TRUE},
             {name : RAFT_FLAGS.ARCH, value: this.name},
-            {name : RAFT_FLAGS.CMAKE_TOOLCHAIN, value: raftiOSToolchainFile().toString()},
-            {name : RAFT_FLAGS.XCODE_EXTLIB_SUBDIR, value: this._XcodeExtLibSubDir(isRelease)}
+            {name : RAFT_FLAGS.CMAKE_TOOLCHAIN, value: raftiOSToolchainFile().toString()}
         ]
     }
 
@@ -82,10 +81,6 @@ class iOSArchitecture extends Architecture {
             default:
                 return "iphoneos";
         }
-    }
-
-    private _XcodeExtLibSubDir(isRelease : boolean) : string {
-        return (isRelease ? "Release" : "Debug") + "-" + this._getSDKType();
     }
 }
 

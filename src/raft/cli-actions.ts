@@ -53,6 +53,12 @@ export async function build(options : {platform? : string, architecture? : strin
     raftlog("Project", `Running the build`, projectTagColorFunc);
     await project.build(buildSettings);
 
+    if (project.doesExtensionExist()) {
+        raftlog("Project", "Running build project extension", projectTagColorFunc);
+        await project.extension(buildSettings);
+        console.log("\n");
+    }
+
     raftlog("Project", `Exiting`, projectTagColorFunc);
     let endTime = process.hrtime(startTime);
     let endTimeInSeconds = ((endTime[0] * 1e9) + endTime[1]) / 1e9;

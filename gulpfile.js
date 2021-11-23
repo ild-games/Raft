@@ -20,4 +20,4 @@ gulp.task('bin', function() {
         .pipe(gulp.dest('release/bin'));
     });
 
-gulp.task('default', ['lib', 'bin']);
+gulp.task('default', gulp.series('lib', 'bin'));

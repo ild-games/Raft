@@ -38,9 +38,12 @@ var argv = yargs
     })
     .command('clean', 'Clean the build and install folders of project and dependencies', function(yargs) {
         var argv = yargs
-            .usage('Usage: $0 clean')
+            .usage('Usage: $0 clean [options]')
+            .boolean('d')
+            .alias('d', 'onlyCleanDependencies')
+            .describe('d', 'Only clean the dependencies, not the project build')
             .argv;
-        Raft.Action.clean().catch(reportError);
+        Raft.Action.clean(argv).catch(reportError);
     })
     .argv;
 

@@ -220,6 +220,7 @@ export class Project {
             .isDistributableBuild(build.distributable)
             .raftIncludeDir(rootProject.dirForDependencyInc(build))
             .raftLibDir(rootProject.dirForDependencyLib(build))
+            .raftInstallDir(rootProject.dirForDependencyInstall(build))
             .raftFrameworkDir(rootProject.dirForDependencyFramework(build))
             .architecture(build.architecture, build.releaseBuild);
     }

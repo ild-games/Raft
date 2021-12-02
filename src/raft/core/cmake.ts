@@ -165,7 +165,7 @@ export class CMakeOptions {
    * @return New CMakeOptions with the install path modified.
    */
   raftInstallDir(path: Path): CMakeOptions {
-    return this.setPath(RAFT_FLAGS.LIB_DIR, path);
+    return this.setPath(RAFT_FLAGS.INSTALL_DIR, path);
   }
 
   /**

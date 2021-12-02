@@ -1,29 +1,28 @@
-import {Project} from './project';
-import {Flag} from './flags';
+import { Flag } from "./flags";
+import { Project } from "./project";
 
 /**
  * Defines the variables available when configuring a specific build.
  */
 export interface Build {
-    platform : Platform;
-    architecture : Architecture;
-    releaseBuild : boolean;
-    distributable : boolean;
+  platform: Platform;
+  architecture: Architecture;
+  releaseBuild: boolean;
+  distributable: boolean;
 }
-
 
 /**
  * Represents a specific target platform. Each platform can have multiple architectures.
  * For example Android is a platform and armabi is an architecture.
  */
 export abstract class Platform {
-    abstract name : string;
+  abstract name: string;
 
-    abstract getArchitectures() : Architecture [];
+  abstract getArchitectures(): Architecture[];
 
-    getDefaultArchitecture() : Architecture {
-        return this.getArchitectures()[0];
-    }
+  getDefaultArchitecture(): Architecture {
+    return this.getArchitectures()[0];
+  }
 }
 
 /**
@@ -31,21 +30,21 @@ export abstract class Platform {
  * unique to a platform. Android x86 has different build rules than Windows x86.
  */
 export abstract class Architecture {
-    abstract name : string;
+  abstract name: string;
 
-    beforeBuild(project : Project, buildConfig : Build) : Promise<any> {
-        return Promise.resolve();
-    }
+  beforeBuild(project: Project, buildConfig: Build): Promise<any> {
+    return Promise.resolve();
+  }
 
-    buildOptions() : string[] {
-        return [];
-    }
+  buildOptions(): string[] {
+    return [];
+  }
 
-    getCMakeFlags(isRelease : boolean) : Flag[] {
-        return [];
-    }
+  getCMakeFlags(isRelease: boolean): Flag[] {
+    return [];
+  }
 
-    getCMakeGeneratorTarget() : string | null {
-        return null;
-    }
+  getCMakeGeneratorTarget(): string | null {
+    return null;
+  }
 }

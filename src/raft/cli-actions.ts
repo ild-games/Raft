@@ -121,20 +121,18 @@ export async function clean(options: {
     throw new Error(errorMessage("You must be in a Raft project folder"));
   }
 
-  project
-    .clean(options.onlyCleanDependencies)
-    .then(() => {
-      console.log(
-        successMessage(
-          `${
-            options.onlyCleanDependencies ? "Only the dependencies'" : "All"
-          } build and install folders have been deleted`
-        )
-      );
-    })
-    .catch((err) => {
-      throw new Error(errorMessage(err));
-    });
+  try {
+    await project.clean(options.onlyCleanDependencies);
+    console.log(
+      successMessage(
+        `${
+          options.onlyCleanDependencies ? "Only the dependencies'" : "All"
+        } build and install folders have been deleted`
+      )
+    );
+  } catch (err) {
+    throw new Error(errorMessage(err));
+  }
 }
 
 function errorMessage(msg: string): string {

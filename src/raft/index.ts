@@ -1,3 +1,3 @@
 export = {
-    Action : require('./cli-actions')
-}
+  Action: require("./cli-actions"),
+};

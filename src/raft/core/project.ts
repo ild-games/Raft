@@ -61,14 +61,14 @@ export class Project {
    *  Clean the build and install directories for the project
    *  @return Returns a promise when the clean process is complete
    */
-  clean(onlyCleanDependencies?: boolean): Promise<any> {
+  async clean(onlyCleanDependencies?: boolean): Promise<void> {
     if (onlyCleanDependencies) {
-      return Promise.all([
+      await Promise.all([
         Project.DEPENDENCY_BUILD_DIR.delete(),
         Project.DEPENDENCY_INSTALL_DIR.delete(),
       ]);
     } else {
-      return Promise.all([
+      await Promise.all([
         Project.BUILD_DIR.delete(),
         Project.DEPENDENCY_BUILD_DIR.delete(),
         Project.DEPENDENCY_INSTALL_DIR.delete(),

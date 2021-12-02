@@ -160,6 +160,15 @@ export class CMakeOptions {
   }
 
   /**
+   * Set the path to search for dependency install files.
+   * @param  path Path where dependencies are installed to.
+   * @return New CMakeOptions with the install path modified.
+   */
+  raftInstallDir(path: Path): CMakeOptions {
+    return this.setPath(RAFT_FLAGS.LIB_DIR, path);
+  }
+
+  /**
    * Set the path that should be used to search for framework dependencies.
    * @param  path Path that should be used to find framework dependencies.
    * @return New CMakeOptios with the framework dependencies set.

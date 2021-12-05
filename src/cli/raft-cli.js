@@ -46,11 +46,17 @@ var argv = yargs
     function (yargs) {
       var argv = yargs
         .usage("Usage: $0 clean [options]")
-        .boolean("d")
-        .alias("d", "onlyCleanDependencies")
+        .boolean("a")
+        .alias("a", "onlyCleanAllDependencies")
+        .describe(
+          "a",
+          "Only clean the dependencies, not the project build"
+        )
+        .alias("d", "onlyCleanSpecificDependency")
+        .nargs("d", 1)
         .describe(
           "d",
-          "Only clean the dependencies, not the project build"
+          "Only clean a specific dependency, not the project build"
         ).argv;
       Raft.Action.clean(argv).catch(reportError);
     }

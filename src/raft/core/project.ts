@@ -61,18 +61,41 @@ export class Project {
    *  Clean the build and install directories for the project
    *  @return Returns a promise when the clean process is complete
    */
-  async clean(onlyCleanDependencies?: boolean): Promise<void> {
-    if (onlyCleanDependencies) {
+  async clean(
+    buildConfig: Build,
+    onlyCleanAllDependcies?: boolean,
+    onlyCleanSpecificDependency?: string
+  ): Promise<string> {
+    if (onlyCleanAllDependcies) {
       await Promise.all([
         Project.DEPENDENCY_BUILD_DIR.delete(),
         Project.DEPENDENCY_INSTALL_DIR.delete(),
       ]);
+      return "All dependencies build and install directories have been cleaned";
+    } else if (onlyCleanSpecificDependency) {
+      if (!this.dirForDependency(onlyCleanSpecificDependency).exists()) {
+        throw new Error(
+          `The dependency "${onlyCleanSpecificDependency} doesn't exist, it either hasn't been pulled down yet with an initial biuld or it's might not be spelled correctly.`
+        );
+      }
+      await Promise.all([
+        this.dirForDependencyBuild(
+          onlyCleanSpecificDependency,
+          buildConfig
+        ).delete(),
+        this.dirForDependencyInstallInclude(
+          onlyCleanSpecificDependency,
+          buildConfig
+        ).delete(),
+      ]);
+      return `The dependency "${onlyCleanSpecificDependency}" build and install directories have been cleaned`;
     } else {
       await Promise.all([
         Project.BUILD_DIR.delete(),
         Project.DEPENDENCY_BUILD_DIR.delete(),
         Project.DEPENDENCY_INSTALL_DIR.delete(),
       ]);
+      return "All build and install directories have been cleaned";
     }
   }
 
@@ -148,6 +171,17 @@ export class Project {
       build.platform.name,
       build.architecture.name,
       this._getBuildType(build)
+    );
+  }
+
+  dirForDependencyInstallInclude(name: string, build: Build) {
+    return this.root.append(
+      Project.DEPENDENCY_INSTALL_DIR,
+      build.platform.name,
+      build.architecture.name,
+      this._getBuildType(build),
+      "include",
+      name
     );
   }
 

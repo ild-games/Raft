@@ -1,6 +1,7 @@
 import * as colors from "colors";
 import * as Promptly from "promptly";
 import * as _ from "underscore";
+import { Build } from "./core/build-config";
 import { getDependency } from "./core/dependency";
 import { throwCommandLineError } from "./core/error";
 import { raftlog } from "./core/log";
@@ -12,26 +13,15 @@ import {
 } from "./raft-file-parser";
 import { instantiateTemplate } from "./template";
 
-/**
- * Build the raft project the user is currently in.
- * @param  options Can be used to specify the parameters for the build configuration.
- * @return A promise that resolves once the build is finished.
- */
-export async function build(
+function getBuildConfig(
+  project: Project,
   options: {
     platform?: string;
     architecture?: string;
     release?: boolean;
     distribute?: boolean;
   } = {}
-): Promise<any> {
-  let startTime = process.hrtime();
-  let project = await Project.find(Path.cwd());
-
-  let dependencies = _.map(project.dependencies(), (dependency) => {
-    return createDependency(dependency, project.raftDir);
-  });
-
+): Build {
   let architectures = getSupportedArchitectures(project.architectures())
     .filter(
       (arch) =>
@@ -51,12 +41,34 @@ export async function build(
     );
   }
 
-  let buildSettings = {
+  return {
     releaseBuild: !!options.release,
     platform: architectures[0].platform,
     architecture: architectures[0].architecture,
     distributable: options.distribute,
   };
+}
+
+/**
+ * Build the raft project the user is currently in.
+ * @param  options Can be used to specify the parameters for the build configuration.
+ * @return A promise that resolves once the build is finished.
+ */
+export async function build(
+  options: {
+    platform?: string;
+    architecture?: string;
+    release?: boolean;
+    distribute?: boolean;
+  } = {}
+): Promise<any> {
+  let startTime = process.hrtime();
+  let project = await Project.find(Path.cwd());
+  const buildSettings = getBuildConfig(project, options);
+
+  let dependencies = _.map(project.dependencies(), (dependency) => {
+    return createDependency(dependency, project.raftDir);
+  });
 
   let projectTagColorFunc = colors.bgBlue.bold;
   raftlog(
@@ -114,22 +126,22 @@ export function create(templateType: string): Promise<any> {
 }
 
 export async function clean(options: {
-  onlyCleanDependencies?: boolean;
+  onlyCleanAllDependcies?: boolean;
+  onlyCleanSpecificDependency?: string;
 }): Promise<any> {
   let project = await Project.find(Path.cwd(), true);
   if (!project) {
     throw new Error(errorMessage("You must be in a Raft project folder"));
   }
+  const buildConfig = getBuildConfig(project);
 
   try {
-    await project.clean(options.onlyCleanDependencies);
-    console.log(
-      successMessage(
-        `${
-          options.onlyCleanDependencies ? "Only the dependencies'" : "All"
-        } build and install folders have been deleted`
-      )
+    const message = await project.clean(
+      buildConfig,
+      options.onlyCleanAllDependcies,
+      options.onlyCleanSpecificDependency
     );
+    console.log(successMessage(message));
   } catch (err) {
     throw new Error(errorMessage(err));
   }

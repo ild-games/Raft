@@ -1,16 +1,20 @@
-import * as os from "os";
 import { Architecture, Platform } from "../core/build-config";
 import { Flag, RAFT_FLAGS } from "../core/flags";
 
-export class HostPlatform extends Platform {
-  name: string = "Host";
+export class NinjaPlatform extends Platform {
+  name: string = "Ninja";
 
-  getArchitectures(): HostArchitecture[] {
-    return [new HostArchitecture()];
+  getArchitectures(): NinjaArchitecture[] {
+    return [new NinjaArchitecture()];
+  }
+
+  getCMakeBuildOptions(): string[] {
+    // ninja does parallelism by default, don't pass it in
+    return [];
   }
 }
 
-export class HostArchitecture extends Architecture {
+export class NinjaArchitecture extends Architecture {
   name: string = "Host";
 
   getCMakeFlags(isRelease: boolean): Flag[] {
@@ -24,9 +28,6 @@ export class HostArchitecture extends Architecture {
   }
 
   getCMakeGeneratorTarget(): string | null {
-    if (os.platform() === "win32") {
-      return "Visual Studio 17 2022";
-    }
-    return null;
+    return "Ninja";
   }
 }

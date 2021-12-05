@@ -13,6 +13,7 @@ import { HostPlatform } from "./platform/host";
 import { iOSPlatform } from "./platform/iOS";
 import { macOSPlatform } from "./platform/macOS";
 import { MinGWPlatform } from "./platform/MinGW";
+import { NinjaPlatform } from "./platform/ninja";
 
 /**
  * Create a Dependency object given a dependency descriptor from a raftfile.
@@ -81,6 +82,7 @@ export function getSupportedArchitectures(
     new iOSPlatform(),
     new macOSPlatform(),
     new MinGWPlatform(),
+    new NinjaPlatform(),
   ];
 
   for (let architecture of supportedArchitectures) {

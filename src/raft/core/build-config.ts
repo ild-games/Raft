@@ -1,3 +1,4 @@
+import * as os from "os";
 import { Flag } from "./flags";
 import { Project } from "./project";
 
@@ -22,6 +23,12 @@ export abstract class Platform {
 
   getDefaultArchitecture(): Architecture {
     return this.getArchitectures()[0];
+  }
+
+  getCMakeBuildOptions(): string[] {
+    const cpuCount = os.cpus().length;
+
+    return ["-j", `${cpuCount + 1}`];
   }
 }
 

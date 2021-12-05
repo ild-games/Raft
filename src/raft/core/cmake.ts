@@ -1,4 +1,3 @@
-import * as os from "os";
 import * as _ from "underscore";
 import { Architecture, Build } from "./build-config";
 import { Flag, RAFT_FLAGS } from "./flags";
@@ -58,6 +57,10 @@ export class CMakeBuild {
       "--config",
       type,
     ];
+    cmakeOptions = [
+      ...cmakeOptions,
+      ...this._buildConfig.platform.getCMakeBuildOptions(),
+    ];
     buildOptions = [...this.platformSpecificBuildOptions(), ...buildOptions];
     if (buildOptions.length > 0) {
       cmakeOptions = [...cmakeOptions, "--", ...buildOptions];
@@ -87,29 +90,11 @@ export class CMakeBuild {
   }
 
   private platformSpecificConfigureOptions(): string[] {
-    let platform = os.platform();
-    let options: string[] = [];
-
-    if (platform === "win32") {
-      options.push("-DCMAKE_CXX_FLAGS=-MP");
-    }
-
-    return options;
+    return [];
   }
 
   private platformSpecificBuildOptions(): string[] {
-    let platform = os.platform();
-    let options: string[] = [];
-
-    if (
-      (platform === "linux" || platform === "darwin") &&
-      this._buildConfig.platform.name !== "iOS" &&
-      this._buildConfig.platform.name !== "macOS"
-    ) {
-      options.push("-j12");
-    }
-
-    return options;
+    return [];
   }
 }
 

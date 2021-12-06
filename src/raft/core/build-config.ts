@@ -1,6 +1,7 @@
 import * as os from "os";
 import { Flag } from "./flags";
 import { Project } from "./project";
+import { Path } from "./path";
 
 /**
  * Defines the variables available when configuring a specific build.
@@ -25,10 +26,18 @@ export abstract class Platform {
     return this.getArchitectures()[0];
   }
 
+  getCMakeGeneratorTarget(): string | null {
+    return null;
+  }
+
   getCMakeBuildOptions(): string[] {
     const cpuCount = os.cpus().length;
 
     return ["-j", `${cpuCount + 1}`];
+  }
+
+  getBuildSymbolPattern(buildType: "Debug" | "Release"): string {
+    return `.${Path.folderSeparator()}`;
   }
 }
 
@@ -49,9 +58,5 @@ export abstract class Architecture {
 
   getCMakeFlags(isRelease: boolean): Flag[] {
     return [];
-  }
-
-  getCMakeGeneratorTarget(): string | null {
-    return null;
   }
 }

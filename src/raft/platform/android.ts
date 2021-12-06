@@ -62,10 +62,6 @@ class AndroidArchitecture extends Architecture {
     ];
   }
 
-  getCMakeGeneratorTarget(): string | null {
-    return "MinGW Makefiles";
-  }
-
   private getStlPath() {
     return findNDK().append(
       "sources",

@@ -61,42 +61,38 @@ export class Project {
    *  Clean the build and install directories for the project
    *  @return Returns a promise when the clean process is complete
    */
-  async clean(
-    buildConfig: Build,
-    onlyCleanAllDependcies?: boolean,
-    onlyCleanSpecificDependency?: string
-  ): Promise<string> {
-    if (onlyCleanAllDependcies) {
-      await Promise.all([
-        Project.DEPENDENCY_BUILD_DIR.delete(),
-        Project.DEPENDENCY_INSTALL_DIR.delete(),
-      ]);
-      return "All dependencies build and install directories have been cleaned";
-    } else if (onlyCleanSpecificDependency) {
-      if (!this.dirForDependency(onlyCleanSpecificDependency).exists()) {
-        throw new Error(
-          `The dependency "${onlyCleanSpecificDependency} doesn't exist, it either hasn't been pulled down yet with an initial biuld or it's might not be spelled correctly.`
-        );
-      }
-      await Promise.all([
-        this.dirForDependencyBuild(
-          onlyCleanSpecificDependency,
-          buildConfig
-        ).delete(),
-        this.dirForDependencyInstallInclude(
-          onlyCleanSpecificDependency,
-          buildConfig
-        ).delete(),
-      ]);
-      return `The dependency "${onlyCleanSpecificDependency}" build and install directories have been cleaned`;
-    } else {
-      await Promise.all([
-        Project.BUILD_DIR.delete(),
-        Project.DEPENDENCY_BUILD_DIR.delete(),
-        Project.DEPENDENCY_INSTALL_DIR.delete(),
-      ]);
-      return "All build and install directories have been cleaned";
+  async cleanAll(): Promise<void> {
+    await Promise.all([
+      Project.BUILD_DIR.delete(),
+      this.cleanAllDependencies(),
+    ]);
+  }
+
+  async cleanAllDependencies(): Promise<void> {
+    await Promise.all([
+      Project.DEPENDENCY_BUILD_DIR.delete(),
+      Project.DEPENDENCY_INSTALL_DIR.delete(),
+    ]);
+  }
+
+  async cleanSpecificDependency(
+    buildConfigs: Build[],
+    dependency: string
+  ): Promise<void> {
+    if (!this.dirForDependency(dependency).exists()) {
+      throw new Error(
+        `The dependency "${dependency} doesn't exist, it either hasn't been pulled down yet with an initial biuld or it's might not be spelled correctly.`
+      );
     }
+
+    const promises = buildConfigs.map((buildConfig) => {
+      Promise.all([
+        this.dirForDependencyBuild(dependency, buildConfig).delete(),
+        this.dirForDependencyInstallInclude(dependency, buildConfig).delete(),
+      ]);
+    });
+
+    await Promise.all(promises);
   }
 
   /**
@@ -155,7 +151,7 @@ export class Project {
       Project.DEPENDENCY_BUILD_DIR,
       build.platform.name,
       build.architecture.name,
-      this._getBuildType(build),
+      this.getBuildType(build.releaseBuild),
       name
     );
   }
@@ -170,7 +166,7 @@ export class Project {
       Project.DEPENDENCY_INSTALL_DIR,
       build.platform.name,
       build.architecture.name,
-      this._getBuildType(build)
+      this.getBuildType(build.releaseBuild)
     );
   }
 
@@ -179,7 +175,7 @@ export class Project {
       Project.DEPENDENCY_INSTALL_DIR,
       build.platform.name,
       build.architecture.name,
-      this._getBuildType(build),
+      this.getBuildType(build.releaseBuild),
       "include",
       name
     );
@@ -287,8 +283,8 @@ export class Project {
    */
   root: Path;
 
-  private _getBuildType(build: Build) {
-    return build.releaseBuild ? "Release" : "Debug";
+  getBuildType(release?: boolean) {
+    return release ? "Release" : "Debug";
   }
 
   private _getExtensionDir(): Path {
@@ -306,5 +302,9 @@ export class Project {
 
   get raftDir(): Path {
     return this.root.append("Raft");
+  }
+
+  get executableName(): string | null {
+    return this.raftfile.executableName;
   }
 }

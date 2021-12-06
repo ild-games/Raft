@@ -16,6 +16,10 @@ export class iOSPlatform extends Platform {
       "all-sim",
     ].map((name) => new iOSArchitecture(name));
   }
+
+  getCMakeGeneratorTarget(): string | null {
+    return "Xcode";
+  }
 }
 
 class iOSArchitecture extends Architecture {
@@ -52,10 +56,6 @@ class iOSArchitecture extends Architecture {
       "BITCODE_GENERATION_MODE=bitcode",
       "OTHER_CFLAGS=-fembed-bitcode",
     ]);
-  }
-
-  getCMakeGeneratorTarget(): string | null {
-    return "Xcode";
   }
 
   private _getSDKType(): string {

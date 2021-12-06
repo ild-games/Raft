@@ -7,6 +7,10 @@ export class macOSPlatform extends Platform {
   getArchitectures(): macOSArchitecture[] {
     return [new macOSArchitecture()];
   }
+
+  getCMakeGeneratorTarget(): string | null {
+    return "Xcode";
+  }
 }
 
 class macOSArchitecture extends Architecture {
@@ -20,9 +24,5 @@ class macOSArchitecture extends Architecture {
       { name: RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.FALSE },
       { name: RAFT_FLAGS.ARCH, value: this.name },
     ];
-  }
-
-  getCMakeGeneratorTarget(): string | null {
-    return "Xcode";
   }
 }

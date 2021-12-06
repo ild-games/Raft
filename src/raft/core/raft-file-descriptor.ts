@@ -63,6 +63,7 @@ export interface ArchitectureDescriptor {
  * Describes the possible format of a RaftFile used to describe raft projects..
  */
 export interface RaftfileRoot {
+  executableName?: string;
   dependencies: DependencyDescriptor[];
 
   /*

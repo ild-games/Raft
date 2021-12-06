@@ -30,6 +30,24 @@ var argv = yargs
       .describe("d", "Build for a distributable release").argv;
     Raft.Action.build(argv).catch(reportError);
   })
+  .command("run", "Run the raft project", function (yargs) {
+    var argv = yargs
+      .usage("Usage: $0 run [options]")
+      .alias("p", "platform")
+      .describe(
+        "p",
+        "The platform that will be targeted by the build. Defaults to the first platform listed in the raftfile."
+      )
+      .alias("a", "architecture")
+      .describe(
+        "a",
+        "The architecture that will be targeted by the build. Defaults to the first architecture listed for the platform in the raftfile."
+      )
+      .boolean("r")
+      .alias("r", "release")
+      .describe("r", "Build release binaries instead of debug binaries").argv;
+    Raft.Action.run(argv).catch(reportError);
+  })
   .command("create", "Create an instance of a template", function (yargs) {
     var argv = yargs
       .usage("Usage: $0 create [options]")
@@ -48,10 +66,7 @@ var argv = yargs
         .usage("Usage: $0 clean [options]")
         .boolean("a")
         .alias("a", "onlyCleanAllDependencies")
-        .describe(
-          "a",
-          "Only clean the dependencies, not the project build"
-        )
+        .describe("a", "Only clean the dependencies, not the project build")
         .alias("d", "onlyCleanSpecificDependency")
         .nargs("d", 1)
         .describe(

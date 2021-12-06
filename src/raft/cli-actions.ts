@@ -1,12 +1,14 @@
 import * as colors from "colors";
 import * as Promptly from "promptly";
 import * as _ from "underscore";
+import { keys } from "underscore";
 import { Build } from "./core/build-config";
 import { getDependency } from "./core/dependency";
 import { throwCommandLineError } from "./core/error";
 import { raftlog } from "./core/log";
 import { Path } from "./core/path";
 import { Project } from "./core/project";
+import { execute } from "./core/system";
 import {
   createDependency,
   getSupportedArchitectures,
@@ -62,15 +64,15 @@ export async function build(
     distribute?: boolean;
   } = {}
 ): Promise<any> {
-  let startTime = process.hrtime();
-  let project = await Project.find(Path.cwd());
+  const startTime = process.hrtime();
+  const project = await Project.find(Path.cwd());
   const buildSettings = getBuildConfig(project, options);
 
-  let dependencies = _.map(project.dependencies(), (dependency) => {
+  const dependencies = _.map(project.dependencies(), (dependency) => {
     return createDependency(dependency, project.raftDir);
   });
 
-  let projectTagColorFunc = colors.bgBlue.bold;
+  const projectTagColorFunc = colors.bgBlue.bold;
   raftlog(
     "Project",
     `Getting ${dependencies.length} for the project`,
@@ -95,9 +97,33 @@ export async function build(
   }
 
   raftlog("Project", `Exiting`, projectTagColorFunc);
-  let endTime = process.hrtime(startTime);
-  let endTimeInSeconds = (endTime[0] * 1e9 + endTime[1]) / 1e9;
+  const endTime = process.hrtime(startTime);
+  const endTimeInSeconds = (endTime[0] * 1e9 + endTime[1]) / 1e9;
   console.log(`Total time: ${endTimeInSeconds.toFixed(2)}s`);
+}
+
+export async function run(
+  options: {
+    platform?: string;
+    architecture?: string;
+    release?: boolean;
+  } = {}
+): Promise<any> {
+  const project = await Project.find(Path.cwd());
+  const executableName = project.executableName;
+  if (!executableName) {
+    throw new Error(
+      "Can't run project, no exectubleName specified in raftfile!"
+    );
+  }
+
+  await build(options);
+
+  const buildConfig = getBuildConfig(project, options);
+  const buildDir = project.dirForBuild(buildConfig);
+  const buildType = project.getBuildType(options.release);
+  const buildSymbol = buildConfig.platform.getBuildSymbolPattern(buildType);
+  return execute(`${buildSymbol}${executableName}`, [], { cwd: buildDir });
 }
 
 /**
@@ -133,15 +159,46 @@ export async function clean(options: {
   if (!project) {
     throw new Error(errorMessage("You must be in a Raft project folder"));
   }
-  const buildConfig = getBuildConfig(project);
 
   try {
-    const message = await project.clean(
-      buildConfig,
-      options.onlyCleanAllDependcies,
-      options.onlyCleanSpecificDependency
-    );
-    console.log(successMessage(message));
+    if (options.onlyCleanSpecificDependency) {
+      const supportedArchitectures = getSupportedArchitectures(
+        project.architectures()
+      );
+      const debugBuildConfigs = supportedArchitectures.map((architecture) => {
+        return {
+          architecture: architecture.architecture,
+          platform: architecture.platform,
+          releaseBuild: false,
+          distributable: false,
+        };
+      });
+      const releaseBuildConfigs = supportedArchitectures.map((architecture) => {
+        return {
+          architecture: architecture.architecture,
+          platform: architecture.platform,
+          releaseBuild: true,
+          distributable: false,
+        };
+      });
+      project.cleanSpecificDependency(
+        [...debugBuildConfigs, ...releaseBuildConfigs],
+        options.onlyCleanSpecificDependency
+      );
+      console.log(
+        successMessage(
+          `The dependency "${options.onlyCleanSpecificDependency}" build and install directories have been cleaned`
+        )
+      );
+    } else if (options.onlyCleanAllDependcies) {
+      project.cleanAllDependencies();
+      console.log(
+        "All dependencies build and install directories have been cleaned"
+      );
+    } else {
+      console.log(project.cleanAll());
+      console.log("All build and install directories have been cleaned");
+    }
   } catch (err) {
     throw new Error(errorMessage(err));
   }

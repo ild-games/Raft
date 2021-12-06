@@ -7,6 +7,10 @@ export class MinGWPlatform extends Platform {
   getArchitectures(): MinGWArchitecture[] {
     return [new MinGWArchitecture()];
   }
+
+  getCMakeGeneratorTarget(): string | null {
+    return "MinGW Makefiles";
+  }
 }
 
 export class MinGWArchitecture extends Architecture {
@@ -20,9 +24,5 @@ export class MinGWArchitecture extends Architecture {
       { name: RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.FALSE },
       { name: RAFT_FLAGS.ARCH, value: this.name },
     ];
-  }
-
-  getCMakeGeneratorTarget(): string | null {
-    return "MinGW Makefiles";
   }
 }

@@ -32,15 +32,16 @@ export class CMakeBuild {
    * @return {Promise<any>}            Promise that resolves once the cmake configuration is complete.
    */
   configure(sourcePath: Path, options: CMakeOptions): Promise<any> {
-    let cmdOptions = [sourcePath.toString()].concat(options.toArray());
-    if (this._buildConfig.architecture.getCMakeGeneratorTarget()) {
-      cmdOptions = [
-        "-G",
-        this._buildConfig.architecture.getCMakeGeneratorTarget(),
-        ...cmdOptions,
-      ];
-    }
-    cmdOptions = [...this.platformSpecificConfigureOptions(), ...cmdOptions];
+    const cmakeOptions = [sourcePath.toString()].concat(options.toArray());
+    const cmakeGenerator = this._buildConfig.platform.getCMakeGeneratorTarget();
+    const cmakeGeneratorOptions = cmakeGenerator ? ["-G", cmakeGenerator] : [];
+    const platformOptions = this.platformSpecificBuildOptions();
+
+    const cmdOptions = [
+      ...cmakeGeneratorOptions,
+      ...cmakeOptions,
+      ...platformOptions,
+    ];
     return execute("cmake", cmdOptions, { cwd: this._buildPath });
   }
 

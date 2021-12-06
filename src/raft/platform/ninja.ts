@@ -12,6 +12,10 @@ export class NinjaPlatform extends Platform {
     // ninja does parallelism by default, don't pass it in
     return [];
   }
+
+  getCMakeGeneratorTarget(): string | null {
+    return "Ninja";
+  }
 }
 
 export class NinjaArchitecture extends Architecture {
@@ -25,9 +29,5 @@ export class NinjaArchitecture extends Architecture {
       { name: RAFT_FLAGS.IS_IOS, value: RAFT_FLAGS.FALSE },
       { name: RAFT_FLAGS.ARCH, value: this.name },
     ];
-  }
-
-  getCMakeGeneratorTarget(): string | null {
-    return "Ninja";
   }
 }

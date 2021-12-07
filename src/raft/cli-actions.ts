@@ -1,7 +1,6 @@
 import * as colors from "colors";
 import * as Promptly from "promptly";
 import * as _ from "underscore";
-import { keys } from "underscore";
 import { Build } from "./core/build-config";
 import { getDependency } from "./core/dependency";
 import { throwCommandLineError } from "./core/error";
@@ -181,7 +180,7 @@ export async function clean(options: {
           distributable: false,
         };
       });
-      project.cleanSpecificDependency(
+      await project.cleanSpecificDependency(
         [...debugBuildConfigs, ...releaseBuildConfigs],
         options.onlyCleanSpecificDependency
       );
@@ -191,12 +190,12 @@ export async function clean(options: {
         )
       );
     } else if (options.onlyCleanAllDependcies) {
-      project.cleanAllDependencies();
+      await project.cleanAllDependencies();
       console.log(
         "All dependencies build and install directories have been cleaned"
       );
     } else {
-      console.log(project.cleanAll());
+      await project.cleanAll();
       console.log("All build and install directories have been cleaned");
     }
   } catch (err) {

@@ -77,11 +77,9 @@ export async function build(
     `Getting ${dependencies.length} for the project`,
     projectTagColorFunc
   );
-  await Promise.all(
-    dependencies.map((dependency) =>
-      getDependency(project, buildSettings, dependency)
-    )
-  );
+  for (let dependency of dependencies) {
+    await getDependency(project, buildSettings, dependency);
+  }
 
   raftlog("Project", `Running before build hooks`, projectTagColorFunc);
   await buildSettings.architecture.beforeBuild(project, buildSettings);
@@ -151,7 +149,7 @@ export function create(templateType: string): Promise<any> {
 }
 
 export async function clean(options: {
-  onlyCleanAllDependcies?: boolean;
+  onlyCleanAllDependencies?: boolean;
   onlyCleanSpecificDependency?: string;
 }): Promise<any> {
   let project = await Project.find(Path.cwd(), true);
@@ -189,7 +187,7 @@ export async function clean(options: {
           `The dependency "${options.onlyCleanSpecificDependency}" build and install directories have been cleaned`
         )
       );
-    } else if (options.onlyCleanAllDependcies) {
+    } else if (options.onlyCleanAllDependencies) {
       await project.cleanAllDependencies();
       console.log(
         "All dependencies build and install directories have been cleaned"

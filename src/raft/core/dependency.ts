@@ -32,11 +32,16 @@ export interface Dependency {
   /**
    * Build the dependency and install it so that it is accessible to other dependencies
    * and the root project.
-   * @param project Root raft project that is being built.
+   * @param rootProject Root raft project that is being built.
    * @param build   Configuration for the current build.
+   * @param project Raft project that is being built, might be same as root
    * @return A promise that resolves once the project is built and installed.
    */
-  buildInstall(project: Project, build: Build): Promise<any>;
+  buildInstall(
+    project: Project,
+    build: Build,
+    rootProject?: Project
+  ): Promise<any>;
 }
 
 /**
@@ -73,7 +78,11 @@ export class RepositoryDependency implements Dependency {
   /**
    * @see Dependency.Dependency.buildInstall
    */
-  buildInstall(project: Project, build: Build): Promise<any> {
+  buildInstall(
+    rootProject: Project,
+    build: Build,
+    project?: Project
+  ): Promise<any> {
     return null;
   }
 
@@ -89,15 +98,40 @@ export class CMakeDependency extends RepositoryDependency {
   /**
    * @see Dependency.Dependency.buildInstall
    */
-  async buildInstall(project: Project, build: Build): Promise<any> {
-    var sourceLocation = project.dirForDependency(this.name);
-    var buildLocation = project.dirForDependencyBuild(this.name, build);
-    var installLocation = project.dirForDependencyInstall(build);
+  async buildInstall(
+    rootProject: Project,
+    build: Build,
+    project?: Project
+  ): Promise<any> {
+    var sourceLocation = rootProject.dirForDependency(this.name);
+    var buildLocation = rootProject.dirForDependencyBuild(this.name, build);
+    var installLocation = rootProject.dirForDependencyInstall(build);
     var cmakeOptions = CMakeOptions.create(installLocation)
       .isReleaseBuild(build.releaseBuild)
       .isDistributableBuild(build.distributable)
       .architecture(build.architecture, build.releaseBuild)
-      .configOptions(this.descriptor.configOptions);
+      .configOptions(this.descriptor.configOptions)
+      .raftIncludeDir(rootProject.dirForDependencyInc(build))
+      .raftLibDir(rootProject.dirForDependencyLib(build))
+      .raftInstallDir(rootProject.dirForDependencyInstall(build));
+
+    if (project) {
+      const cmakeModulePath = project.root.append("cmake/modules");
+      console.log(
+        `Dependency is itself RAFT PROJECT, here is its possible cmake module path!: ${cmakeModulePath}`
+      );
+      if (cmakeModulePath.exists()) {
+        cmakeOptions = cmakeOptions.cmakeModulePath(cmakeModulePath);
+      }
+    } else {
+      const cmakeModulePath = rootProject.root.append("cmake/modules");
+      console.log(
+        `Dependency is not a RAFT PROJECT, here is its root RAFT PROJECT possible cmake module path!: ${cmakeModulePath}`
+      );
+      if (cmakeModulePath.exists()) {
+        cmakeOptions = cmakeOptions.cmakeModulePath(cmakeModulePath);
+      }
+    }
 
     let cmakeBuild = new CMakeBuild(buildLocation, build);
     await cmakeBuild.configure(sourceLocation, cmakeOptions);
@@ -169,6 +203,7 @@ export class RaftDependency extends RepositoryDependency {
           .map((dependency) =>
             this._createDependency(dependency, this.project.raftDir)
           );
+
         return Promise.all(
           dependencies.map((dependency) => dependency.download(project, build))
         );
@@ -178,19 +213,19 @@ export class RaftDependency extends RepositoryDependency {
   /**
    * @see Dependency.buildInstall
    */
-  async buildInstall(project: Project, build: Build): Promise<any> {
-    var buildPath = project.dirForDependencyBuild(this.name, build);
+  async buildInstall(rootProject: Project, build: Build): Promise<any> {
+    var buildPath = rootProject.dirForDependencyBuild(this.name, build);
     var dependencies = this.project
       .dependencies()
       .map((dependency) =>
-        this._createDependency(dependency, this.project.raftDir)
+        this._createDependency(dependency, rootProject.raftDir)
       );
 
-    await Promise.all(
-      dependencies.map((dependency) => dependency.buildInstall(project, build))
-    );
+    for (let dependency of dependencies) {
+      await dependency.buildInstall(rootProject, build, this.project);
+    }
 
-    var options = this.project.cmakeOptions(project, build);
+    var options = this.project.cmakeOptions(rootProject, build);
     options = options.configOptions(this.descriptor.configOptions || []);
     let cmakeBuild = new CMakeBuild(buildPath, build);
 

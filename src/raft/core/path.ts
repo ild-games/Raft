@@ -156,4 +156,8 @@ export class Path {
   static folderSeparator(): string {
     return npath.sep;
   }
+
+  static convertToUnixLike(path: Path): Path {
+    return new Path(path.path.replace(/\\/g, "/"));
+  }
 }

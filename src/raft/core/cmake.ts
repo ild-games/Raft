@@ -174,6 +174,10 @@ export class CMakeOptions {
     return copy;
   }
 
+  cmakeModulePath(path?: Path): CMakeOptions {
+    return this.setPath("CMAKE_MODULE_PATH", path);
+  }
+
   /**
    * Configure CMake as a distributable build or not
    * @param  isRelease True if it is a distributable build. False if not.
@@ -224,7 +228,7 @@ export class CMakeOptions {
 
   private setPath(key: string, value: Path) {
     var result = this.clone();
-    result.options[key] = value.toString();
+    result.options[key] = Path.convertToUnixLike(value).toString();
     return result;
   }
 

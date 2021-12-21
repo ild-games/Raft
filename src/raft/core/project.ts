@@ -268,7 +268,7 @@ export class Project {
       installPath = rootProject.dirForDependencyInstall(build);
     }
 
-    return CMake.CMakeOptions.create(installPath)
+    let options = CMake.CMakeOptions.create(installPath)
       .isReleaseBuild(build.releaseBuild)
       .isDistributableBuild(build.distributable)
       .raftIncludeDir(rootProject.dirForDependencyInc(build))
@@ -276,6 +276,13 @@ export class Project {
       .raftInstallDir(rootProject.dirForDependencyInstall(build))
       .raftFrameworkDir(rootProject.dirForDependencyFramework(build))
       .architecture(build.architecture, build.releaseBuild);
+
+    const cmakeModulePath = this.root.append("cmake/modules");
+    if (cmakeModulePath.exists()) {
+      options = options.cmakeModulePath(cmakeModulePath);
+    }
+
+    return options;
   }
 
   /**

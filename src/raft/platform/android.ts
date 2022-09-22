@@ -55,7 +55,7 @@ class AndroidArchitecture extends Architecture {
       },
       { name: "ANDROID_ABI", value: this.name },
       { name: "ANDROID_STL", value: "c++_shared" },
-      { name: "ANDROID_NATIVE_API_LEVEL", value: "android-21" },
+      { name: "ANDROID_NATIVE_API_LEVEL", value: "android-23" },
       { name: "CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION", value: "clang" },
       { name: "CMAKE_SYSTEM_NAME", value: "Android" },
       { name: "CMAKE_ANDROID_NDK", value: findNDK().toString() },
@@ -67,7 +67,6 @@ class AndroidArchitecture extends Architecture {
       "sources",
       "cxx-stl",
       STL_DIR_NAME,
-      "4.9",
       "libs",
       this.name,
       STL_LIB_NAME

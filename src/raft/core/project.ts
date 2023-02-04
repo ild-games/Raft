@@ -32,6 +32,12 @@ export class Project {
   private static DEPENDENCY_INC_DIR = new Path("include");
   private static DEPENDENCY_FRAMEWORK_DIR = new Path(CMake.FRAMEWORK_DIR);
 
+
+  /**
+   * Root directory of the project.
+   */
+  root: Path;
+
   private raftfile: RaftfileRoot;
 
   constructor(root: Path) {
@@ -284,11 +290,6 @@ export class Project {
 
     return options;
   }
-
-  /**
-   * Root directory of the project.
-   */
-  root: Path;
 
   getBuildType(release?: boolean) {
     return release ? "Release" : "Debug";

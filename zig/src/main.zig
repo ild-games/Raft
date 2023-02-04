@@ -1,19 +1,7 @@
 const std = @import("std");
-
-const RaftPlatform = enum {
-    host,
-    windows,
-    macOS,
-    linux,
-    android,
-    iOS,
-};
-
-const RaftArchitecture = enum {
-    host,
-    x86_64,
-    i386,
-};
+const PlatformType = @import("platforms.zig").PlatformType;
+const ArchitectureType = @import("architectures.zig").ArchitectureType;
+const commands = @import("commands.zig");
 
 const usage =
     \\Usage: raft [command] [options]
@@ -35,12 +23,19 @@ pub fn fatal(comptime format: []const u8, args: anytype) noreturn {
 }
 
 pub fn main() !void {
+    var timer = try std.time.Timer.start();
+
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
     const args = try std.process.argsAlloc(allocator);
 
-    return mainArgs(allocator, args);
+    var returnValue = mainArgs(allocator, args);
+
+    var elapsed_seconds = @intToFloat(f32, timer.read()) / 1_000_000_000.0;
+    std.log.info("Total time: {d:.3}s", .{elapsed_seconds});
+
+    return returnValue;
 }
 
 pub fn mainArgs(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -74,13 +69,15 @@ pub const usage_build =
     \\   -a, --architecture [host|x86_64|   Which architecture to build for
     \\                       i386]
     \\   -r, --release                      Builds for release mode
+    \\   -d, --distributable                Builds for a distributable release
     \\
 ;
 
-pub fn cmdBuild(_: std.mem.Allocator, args: []const []const u8) !void {
-    var platform: RaftPlatform = .host;
-    var architecture: RaftArchitecture = .host;
+pub fn cmdBuild(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    var platform: PlatformType = .host;
+    var architecture: ArchitectureType = .host;
     var is_release_build: bool = false;
+    var is_distributable: bool = false;
 
     {
         var i: usize = 0;
@@ -96,7 +93,7 @@ pub fn cmdBuild(_: std.mem.Allocator, args: []const []const u8) !void {
                     }
                     i += 1;
                     const next_arg = args[i];
-                    platform = std.meta.stringToEnum(RaftPlatform, next_arg) orelse {
+                    platform = std.meta.stringToEnum(PlatformType, next_arg) orelse {
                         fatal("expected [host|windows|macOS|linux|android|iOS] after {s}, found '{s}'", .{ arg, next_arg });
                     };
                 } else if (std.mem.eql(u8, arg, "-a") or std.mem.eql(u8, arg, "--architecture")) {
@@ -105,19 +102,25 @@ pub fn cmdBuild(_: std.mem.Allocator, args: []const []const u8) !void {
                     }
                     i += 1;
                     const next_arg = args[i];
-                    architecture = std.meta.stringToEnum(RaftArchitecture, next_arg) orelse {
+                    architecture = std.meta.stringToEnum(ArchitectureType, next_arg) orelse {
                         fatal("expected [host|x86_64|i386] after {s}, found '{s}'", .{ arg, next_arg });
                     };
                 } else if (std.mem.eql(u8, arg, "-r") or std.mem.eql(u8, arg, "--release")) {
                     is_release_build = true;
+                } else if (std.mem.eql(u8, arg, "-d") or std.mem.eql(u8, arg, "--distributable")) {
+                    is_distributable = true;
                 }
             }
         }
     }
 
-    std.log.info("{}", .{platform});
-    std.log.info("{}", .{architecture});
-    std.log.info("{}", .{is_release_build});
+    try commands.build(
+        platform,
+        architecture,
+        is_release_build,
+        is_distributable,
+        allocator,
+    );
 }
 
 pub fn cmdRun(_: std.mem.Allocator, _: []const []const u8) !void {}
